@@ -9,6 +9,7 @@
 #include <iomanip>
 #include "sp2_hw/hardware_interface/AsyncSocketCan.hpp"
 #include "sp2_hw/hardware_interface/AsyncUsart.hpp"
+#include "sp2_hw/hardware_interface/TestCan.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 void read_can(can_frame rx_frame)
@@ -31,6 +32,8 @@ int main(int argc, char **argv)
     AsyncUsart usart_dbus;
     std::thread thread(&AsyncUsart::serialThread, &usart_dbus, "/dev/ttyUSB0", 100000, std::ref(running));
 
+    TestCan sock("can0");
+    sock.open(read_can);
     // can::SocketCan sock;
     // sock.open("can0", read_can);
 

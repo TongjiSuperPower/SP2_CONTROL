@@ -51,10 +51,6 @@ namespace can
          * \param frame referenced frame which you want to send.
          */
         void write(can_frame *frame) const;
-        /** \brief Starts a new thread, that will wait for socket events.
-         *
-         */
-        bool startReceiverThread(int thread_priority);
         /**
          * Pointer to a function which shall be called
          * when frames are being received from the CAN bus
