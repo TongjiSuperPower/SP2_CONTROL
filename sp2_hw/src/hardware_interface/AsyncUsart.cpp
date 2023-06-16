@@ -12,7 +12,7 @@ void AsyncUsart::serialThread(const std::string &port, int baudrate, std::atomic
 
     port_ = fd;
 
-    // 配置串口
+    // 配置串口 https://blog.csdn.net/qq_45811143/article/details/119462210
     struct termios2 options;
     if (ioctl(fd, TCGETS2, &options) == -1)
     {
@@ -37,6 +37,17 @@ void AsyncUsart::serialThread(const std::string &port, int baudrate, std::atomic
 
     /* set input mode (non−canonical, no echo,...) */
     options.c_lflag = 0;
+    /* 1. VMIN>0 && VTIME>0
+     *    VMIN为最少读取的字符数，当读取到一个字符后，会启动一个定时器，在定时器超时前，
+     *    如果已经读取到了VMIN个字符，则返回VMIN个字符。如果在接收到VMIN个字符前，定时
+     *    器已经超时，则返回已经读取到的字符。注意，至少会读取到一个字符，否则定时器不会启动。
+     * 2. VMIN>0 && VTIME==0
+     *    在只有读取到VMIN个字符时，::read()才返回，因此该设置可能引起永久阻塞。
+     * 3. VMIN==0 && VTIME>0
+     *    在接收到一个字节或者定时器超时后，::read()就返回。
+     * 4. VMIN==0 && VTIME==0
+     *    执行到::read()就立刻返回，不阻塞。
+     */
     options.c_cc[VTIME] = 0;
     options.c_cc[VMIN] = 0;
 

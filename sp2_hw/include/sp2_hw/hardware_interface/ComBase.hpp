@@ -18,19 +18,29 @@
 
 namespace ComBase
 {
+    /** \brief 通讯虚基类
+     * \param ComProtocolT 通讯协议的数据帧数据类型，如<uint8_t>或<can_frame>
+     */
     template <class ComProtocolT>
     class ComBase
     {
     public:
-        ComBase() = default;
+        ComBase() = delete;
         ComBase(const std::string &interface) : interface_name_(interface){};
+        ComBase(const std::string &interface,
+                boost::function<void(const ComProtocolT &rx_frame)> reception_handler)
+            : interface_name_(interface), reception_handler_(std::move(reception_handler)){};
         ~ComBase();
 
         void setInterfaceName(const std::string &interface) { interface_name_ = interface; };
+        void passRecptionHandler(boost::function<void(const ComProtocolT &rx_frame)> reception_handler)
+        {
+            reception_handler_ = std::move(reception_handler);
+        };
 
-        bool open(boost::function<void(const ComProtocolT &rx_frame)> reception_handler);
+        bool open(void);
         bool isOpen() { return (socket_fd_ != -1 && epoll_fd_ != -1 && receiver_thread_running_ != 1); };
-        void close();
+        void close(void);
 
     protected:
         int socket_fd_ = -1;
@@ -56,7 +66,7 @@ namespace ComBase
     }
 
     template <class ComProtocolT>
-    void ComBase<ComProtocolT>::close()
+    void ComBase<ComProtocolT>::close(void)
     {
         terminate_receiver_thread_ = true;
         while (receiver_thread_running_)
@@ -69,9 +79,13 @@ namespace ComBase
     }
 
     template <class ComProtocolT>
-    bool ComBase<ComProtocolT>::open(boost::function<void(const ComProtocolT &rx_frame)> reception_handler)
+    bool ComBase<ComProtocolT>::open(void)
     {
-        reception_handler_ = std::move(reception_handler);
+        if (reception_handler_ == nullptr)
+        {
+            perror("Error reception_handler could not be empty");
+            return false;
+        }
         if (!(this->openSocket() && this->openEpoll()))
         {
             perror("Error creating communication");
@@ -126,11 +140,18 @@ namespace ComBase
                 perror("Error while waiting for events");
                 return;
             }
-
             // 实际上num_events肯定等于1，因为只申请了一个File Descriptor
             for (int i = 0; i < num_events; ++i)
                 if (events_[i].data.fd == socket_fd_)
+                {
+                    ssize_t num_bytes = recv(socket_fd_, &rx_frame, sizeof(rx_frame), MSG_DONTWAIT);
+                    if (num_bytes == -1)
+                    {
+                        perror("Error reading from SocketCan");
+                        return;
+                    }
                     reception_handler_(rx_frame);
+                }
         }
     }
 } // namespace ComBase
