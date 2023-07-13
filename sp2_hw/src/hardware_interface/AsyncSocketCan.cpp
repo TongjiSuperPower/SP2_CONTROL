@@ -18,11 +18,12 @@ namespace can
     void SocketCan::close()
     {
         terminate_receiver_thread_ = true;
-        while (receiver_thread_running_)
-            ;
+        // 通过析构回收线程资源
+        read_thread_.join();
+
+        // 关闭socket
         if (!isOpen())
             return;
-
         epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, socket_fd_, NULL);
         ::close(epoll_fd_);
         ::close(socket_fd_);
@@ -123,7 +124,7 @@ namespace can
         }
 
         // Multithread
-        std::thread read_thread(&SocketCan::socketcan_receiver_thread, this);
+        read_thread_ = std::thread(&SocketCan::socketcan_receiver_thread, this);
         return true;
     }
 }
