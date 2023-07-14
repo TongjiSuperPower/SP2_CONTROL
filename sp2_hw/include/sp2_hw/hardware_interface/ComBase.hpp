@@ -55,6 +55,7 @@ namespace ComBase
 
         bool openEpoll(void);
         void receiver_thread_(void);
+        std::thread read_thread_{};
         boost::function<void(const ComProtocolT &rx_frame)> reception_handler_;
     };
 
@@ -69,8 +70,11 @@ namespace ComBase
     void ComBase<ComProtocolT>::close(void)
     {
         terminate_receiver_thread_ = true;
-        while (receiver_thread_running_)
-            ;
+        // RAII，防止线程异常导致程序崩溃
+        if (read_thread_.joinable())
+            read_thread_.join();
+
+        // 关闭socket
         if (!this->isOpen())
             return;
         epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, socket_fd_, NULL);
@@ -92,7 +96,7 @@ namespace ComBase
             return false;
         }
 
-        std::thread read_thread(&ComBase::receiver_thread_, this);
+        read_thread_ = std::thread(&ComBase::receiver_thread_, this);
         return true;
     }
 

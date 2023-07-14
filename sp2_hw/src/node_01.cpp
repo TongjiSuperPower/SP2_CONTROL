@@ -9,7 +9,7 @@
 #include <iomanip>
 #include "sp2_hw/hardware_interface/AsyncSocketCan.hpp"
 #include "sp2_hw/hardware_interface/AsyncUsart.hpp"
-#include "sp2_hw/hardware_interface/TestCan.hpp"
+#include "sp2_hw/hardware_interface/SocketCan.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 void read_can(const can_frame &rx_frame)
@@ -19,6 +19,7 @@ void read_can(const can_frame &rx_frame)
         std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
     std::cout << std::endl;
 }
+
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
@@ -31,10 +32,13 @@ int main(int argc, char **argv)
     // AsyncUsart usart_dbus;
     // std::thread thread(&AsyncUsart::serialThread, &usart_dbus, "/dev/ttyUSB0", 100000, std::ref(running));
 
-    // SocketCan::SocketCan sock("can0");
-    // sock.open();
-    can::SocketCan sock;
-    sock.open("can0", read_can);
+    // ComBase的子类
+    SocketCan::SocketCan sock("can0");
+    sock.open();
+
+    // AsyncSocketCan
+    // can::SocketCan sock;
+    // sock.open("can0", read_can);
 
     rclcpp::spin(node);
     rclcpp::shutdown();

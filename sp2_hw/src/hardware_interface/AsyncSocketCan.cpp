@@ -19,7 +19,8 @@ namespace can
     {
         terminate_receiver_thread_ = true;
         // 通过析构回收线程资源
-        read_thread_.join();
+        if (read_thread_.joinable())
+            read_thread_.join();
 
         // 关闭socket
         if (!isOpen())

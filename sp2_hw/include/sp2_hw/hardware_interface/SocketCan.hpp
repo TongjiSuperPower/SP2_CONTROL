@@ -3,6 +3,7 @@
 #include <net/if.h>
 #include <boost/function.hpp>
 #include <functional>
+#include <iomanip>
 
 namespace SocketCan
 {
