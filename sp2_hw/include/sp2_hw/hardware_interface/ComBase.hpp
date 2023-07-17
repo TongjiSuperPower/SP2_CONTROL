@@ -37,6 +37,7 @@ namespace ComBase
         {
             reception_handler_ = std::move(reception_handler);
         };
+        void write(ComProtocolT *rx_frame) const;
 
         bool open(void);
         bool isOpen() { return (socket_fd_ != -1 && epoll_fd_ != -1 && receiver_thread_running_ != 1); };
@@ -157,5 +158,17 @@ namespace ComBase
                     reception_handler_(rx_frame);
                 }
         }
+    }
+
+    template <class ComProtocolT>
+    void ComBase<ComProtocolT>::write(ComProtocolT *rx_frame) const
+    {
+        if (!isOpen())
+        {
+            printf("Can not write, %s not opened.", interface_name_);
+            return;
+        }
+        if (::write(socket_fd_, rx_frame, sizeof(ComProtocolT)) == -1)
+            printf("Unable to write: The %s tx buffer may be full", interface_name_);
     }
 } // namespace ComBase

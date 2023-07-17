@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * BSD 3-Clause License
+ *
+ * Copyright (c) 2023, Lithesh
+ * All rights reserved.
+ */
+
 #include "sp2_hw/hardware_interface/ComBase.hpp"
 #include <linux/can.h>
 #include <net/if.h>

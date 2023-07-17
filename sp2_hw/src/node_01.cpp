@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     // std::thread thread(&AsyncUsart::serialThread, &usart_dbus, "/dev/ttyUSB0", 100000, std::ref(running));
 
     // ComBase的子类
-    SocketCan::SocketCan sock("can0");
+    SocketCan::SocketCan sock("can0", read_can);
     sock.open();
 
     // AsyncSocketCan
