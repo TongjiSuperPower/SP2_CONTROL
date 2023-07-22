@@ -25,7 +25,7 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
-#include "sp2_hw/hardware_interface/AsyncSocketCan.hpp"
+#include "sp2_hw/hardware_interface/SocketCan.hpp"
 
 #include <mutex>
 
@@ -63,7 +63,7 @@ namespace single_arm
     can_frame read_buffer_;
     double effort_command_;
     double position_state_;
-    can::SocketCan socket_can_;
+    SocketCan::SocketCan socket_can_;
   };
 
 } // namespace single_arm

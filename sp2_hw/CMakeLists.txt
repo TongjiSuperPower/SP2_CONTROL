@@ -36,4 +36,5 @@ install(
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(include)
+ament_export_dependencies(rclcpp)
 ament_package()

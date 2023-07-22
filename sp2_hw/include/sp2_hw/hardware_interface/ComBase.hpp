@@ -4,6 +4,7 @@
  * Copyright (c) 2023, Lithesh
  * All rights reserved.
  */
+/* (Lithesh)纪念并感谢我的奶奶 */
 
 #pragma once
 
@@ -11,6 +12,7 @@
 #include <thread>
 #include <sys/epoll.h>
 #include <sys/ioctl.h>
+#include <net/if.h>
 #include <boost/function.hpp>
 #include <atomic>
 
@@ -19,13 +21,14 @@
 namespace ComBase
 {
     /** \brief 通讯虚基类
-     * \param ComProtocolT 通讯协议的数据帧数据类型，如<uint8_t>或<can_frame>
+     * \tparam ComProtocolT 通讯协议的数据帧数据类型，如<uint8_t>或<can_frame>
      */
     template <class ComProtocolT>
     class ComBase
     {
     public:
-        ComBase() = delete;
+        // hardware构造时会调用各成员无参构造，因此要保留
+        ComBase() = default;
         ComBase(const std::string &interface) : interface_name_(interface){};
         ComBase(const std::string &interface,
                 boost::function<void(const ComProtocolT &rx_frame)> reception_handler)
@@ -33,6 +36,7 @@ namespace ComBase
         ~ComBase();
 
         void setInterfaceName(const std::string &interface) { interface_name_ = interface; };
+        // 回调函数传入方法
         void passRecptionHandler(boost::function<void(const ComProtocolT &rx_frame)> reception_handler)
         {
             reception_handler_ = std::move(reception_handler);
@@ -169,6 +173,9 @@ namespace ComBase
             return;
         }
         if (::write(socket_fd_, tx_frame, sizeof(ComProtocolT)) == -1)
-            printf("Unable to write: The %s tx buffer may be full", interface_name_);
+        {
+            std::string error(interface_name_ + " unable to write");
+            perror(error.c_str());
+        }
     }
 } // namespace ComBase

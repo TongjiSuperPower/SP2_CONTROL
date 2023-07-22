@@ -4,10 +4,13 @@
  * Copyright (c) 2023, Lithesh
  * All rights reserved.
  */
+
 #pragma once
 
 #include "sp2_hw/hardware_interface/SocketCan.hpp"
 #include <unordered_map>
+#include <boost/lockfree/spsc_queue.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 namespace SP2Control
 {
@@ -26,8 +29,8 @@ namespace SP2Control
         double pos, vel, acc;
         // (Lithesh)TODO: 可能存在非力控的电机协议
         /**
-         * @param exe_cmd 为最终执行指令
-         * @param cmd 为未加可能额外限制的指令
+         * @param  exe_cmd  最终执行指令
+         * @param  cmd      未加可能额外限制的指令
          */
         double exe_cmd, cmd;
         bool is_halted = false;
@@ -51,6 +54,16 @@ namespace SP2Control
         std::unordered_map<std::string, ActCoeff> *type2act_coeff_;
     };
 
+    struct CanFrameStamp
+    {
+        rclcpp::Time stamp;
+        can_frame frame;
+    };
+
+    /**
+     * @brief 一个用于描述can总线的类。该类实现了 \c read() 和 \c write() 方法。
+     *        根据电机协议对数据解包的工作在该类中完成。
+     */
     class CanBus
     {
         using ID2ACTDATA_MAP = std::unordered_map<int, ActData>;
@@ -58,14 +71,26 @@ namespace SP2Control
 
     public:
         CanBus() = delete;
-        CanBus(const std::string &name, ID2ACTDATA_MAP *id2act_data, TYPE2ACTCOEFF_MAP *type2act_coeff);
+        CanBus(const std::string &name, CanBusData can_bus_data);
+        ~CanBus();
+
         void read();
         void write();
 
     private:
+        std::string bus_name_;
         SocketCan::SocketCan socket_can_;
-        void recvCallback(const can_frame &rx_frame);
         CanBusData can_bus_data_;
+
+        can_frame rm_frame_0x200{
+            .can_id = 0x200,
+            .can_dlc = 8};
+        can_frame rm_frame_0x1FF{
+            .can_id = 0x1FF,
+            .can_dlc = 8};
+
+        boost::lockfree::spsc_queue<CanFrameStamp> rx_buffer_{20};
+        void recvCallback(const can_frame &rx_frame);
     };
 
 } // namespace SP2Control

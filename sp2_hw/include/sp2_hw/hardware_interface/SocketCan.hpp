@@ -5,9 +5,10 @@
  * All rights reserved.
  */
 
+#pragma once
+
 #include "sp2_hw/hardware_interface/ComBase.hpp"
 #include <linux/can.h>
-#include <net/if.h>
 #include <boost/function.hpp>
 #include <functional>
 #include <iomanip>
@@ -17,15 +18,18 @@ namespace SocketCan
     class SocketCan final : public ComBase::ComBase<can_frame>
     {
     public:
-        SocketCan() = delete;
+        SocketCan() = default;
         SocketCan(const std::string &interface) : ComBase<can_frame>(interface)
         {
+            // passRecptionHandler(read_can);
             passRecptionHandler(std::bind(&SocketCan::read_can, this, std::placeholders::_1));
         };
         SocketCan(const std::string &interface,
                   boost::function<void(const can_frame &rx_frame)> reception_handler)
             : ComBase<can_frame>(interface, reception_handler){};
 
+        void configure(const std::string &interface,
+                       boost::function<void(const can_frame &rx_frame)> reception_handler);
         void read_can(const can_frame &rx_frame);
 
     private:
@@ -39,6 +43,13 @@ namespace SocketCan
         for (int j = 0; j < rx_frame.can_dlc; ++j)
             std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
         std::cout << std::endl;
+    }
+
+    void SocketCan::configure(const std::string &interface,
+                              boost::function<void(const can_frame &rx_frame)> reception_handler)
+    {
+        setInterfaceName(interface);
+        passRecptionHandler(reception_handler);
     }
 
     bool SocketCan::openSocket(void)

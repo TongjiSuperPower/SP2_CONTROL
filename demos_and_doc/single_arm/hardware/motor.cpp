@@ -46,12 +46,10 @@ namespace single_arm
     {
       return hardware_interface::CallbackReturn::ERROR;
     }
+    socket_can_.configure("can0", std::bind(&Motor::read_thread_callback, this, std::placeholders::_1));
+    if (!socket_can_.open())
+      return hardware_interface::CallbackReturn::SUCCESS;
 
-    if (!socket_can_.open("can0", std::bind(&Motor::read_thread_callback, this, std::placeholders::_1)))
-      // if (!socket_can_.open("can0", std::bind(Motor::callback,this,std::placeholders::_1))
-      RCLCPP_INFO(rclcpp::get_logger("Motor"), "FAILED!!!");
-    else
-      RCLCPP_INFO(rclcpp::get_logger("Motor"), "SUCCESS!!!");
     return hardware_interface::CallbackReturn::SUCCESS;
   }
 
