@@ -1,0 +1,9 @@
+<library path="single_arm">
+  <class name="single_arm/Motor"
+         type="single_arm::Motor"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Motor test.
+    </description>
+  </class>
+</library>

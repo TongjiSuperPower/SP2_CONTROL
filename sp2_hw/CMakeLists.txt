@@ -21,7 +21,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_package()
 include_directories(include)
 set(SRC_LIST
   src/node_01.cpp
@@ -30,4 +29,11 @@ set(SRC_LIST
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 ament_target_dependencies(${PROJECT_NAME} rclcpp) 
 
+install(
+  DIRECTORY include/
+  DESTINATION include/
+)
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
+
+ament_export_include_directories(include)
+ament_package()

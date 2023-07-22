@@ -161,14 +161,14 @@ namespace ComBase
     }
 
     template <class ComProtocolT>
-    void ComBase<ComProtocolT>::write(ComProtocolT *rx_frame) const
+    void ComBase<ComProtocolT>::write(ComProtocolT *tx_frame) const
     {
         if (!isOpen())
         {
             printf("Can not write, %s not opened.", interface_name_);
             return;
         }
-        if (::write(socket_fd_, rx_frame, sizeof(ComProtocolT)) == -1)
+        if (::write(socket_fd_, tx_frame, sizeof(ComProtocolT)) == -1)
             printf("Unable to write: The %s tx buffer may be full", interface_name_);
     }
 } // namespace ComBase
