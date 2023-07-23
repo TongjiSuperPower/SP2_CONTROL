@@ -5,7 +5,8 @@
  * All rights reserved.
  */
 
-#pragma once
+#ifndef SP2_CONTROL_CAN_BUS_HPP
+#define SP2_CONTROL_CAN_BUS_HPP
 
 #include "sp2_hw/hardware_interface/SocketCan.hpp"
 #include <unordered_map>
@@ -72,27 +73,23 @@ namespace SP2Control
         using TYPE2ACTCOEFF_MAP = std::unordered_map<std::string, ActCoeff>;
 
     public:
-        CanBus() = delete;
+        CanBus() = default;
         CanBus(const std::string &name, CanBusData can_bus_data);
-        ~CanBus();
 
         void read();
         void write();
 
     private:
         std::string bus_name_;
-        SocketCan::SocketCan socket_can_;
         CanBusData can_bus_data_;
+        SocketCan::SocketCan socket_can_{};
 
-        can_frame rm_frame_0x200{
-            .can_id = 0x200,
-            .can_dlc = 8};
-        can_frame rm_frame_0x1FF{
-            .can_id = 0x1FF,
-            .can_dlc = 8};
+        can_frame rm_frame_0x200;
+        can_frame rm_frame_0x1FF;
 
         boost::lockfree::spsc_queue<CanFrameStamp> rx_buffer_{20};
         void recvCallback(const can_frame &rx_frame);
     };
 
 } // namespace SP2Control
+#endif

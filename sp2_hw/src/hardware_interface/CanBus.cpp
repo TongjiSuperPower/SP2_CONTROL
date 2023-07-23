@@ -6,13 +6,15 @@
  */
 
 #include "sp2_hw/hardware_interface/CanBus.hpp"
+
 namespace SP2Control
 {
     const uint8_t kReadCountMax = 20;
 
     CanBus::CanBus(const std::string &name, CanBusData can_bus_data)
-        : can_bus_data_(can_bus_data), socket_can_(name, recvCallback), bus_name_(name)
+        : bus_name_(name), can_bus_data_(can_bus_data)
     {
+        socket_can_.configure(bus_name_, std::bind(&CanBus::recvCallback, this, std::placeholders::_1));
         while (!socket_can_.open())
             sleep(5);
 
@@ -74,14 +76,19 @@ namespace SP2Control
 
     void CanBus::write()
     {
+        ;
     }
 
     void CanBus::recvCallback(const can_frame &rx_frame)
     {
+        std::cout << "CAN ID: " << std::hex << int(rx_frame.can_id) << ", Data: ";
+        for (int j = 0; j < rx_frame.can_dlc; ++j)
+            std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
+        std::cout << std::endl;
         // 已是无锁队列，无需再加锁
-        CanFrameStamp can_frame_stamp{.stamp = rclcpp::Clock().now(),
-                                      .frame = rx_frame};
-        rx_buffer_.push(can_frame_stamp);
+        //        CanFrameStamp can_frame_stamp{.stamp = rclcpp::Clock().now(),
+        //.frame = rx_frame};
+        // rx_buffer_.push(can_frame_stamp);
     }
 
 } // namespace SP2Control

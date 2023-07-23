@@ -66,14 +66,14 @@ namespace ComBase
     };
 
     template <class ComProtocolT>
-    ComBase<ComProtocolT>::~ComBase()
+    inline ComBase<ComProtocolT>::~ComBase()
     {
         if (this->isOpen())
             this->close();
     }
 
     template <class ComProtocolT>
-    void ComBase<ComProtocolT>::close(void)
+    inline void ComBase<ComProtocolT>::close(void)
     {
         terminate_receiver_thread_ = true;
         // RAII，防止线程异常导致程序崩溃
@@ -89,7 +89,7 @@ namespace ComBase
     }
 
     template <class ComProtocolT>
-    bool ComBase<ComProtocolT>::open(void)
+    inline bool ComBase<ComProtocolT>::open(void)
     {
         if (reception_handler_ == nullptr)
         {
@@ -107,7 +107,7 @@ namespace ComBase
     }
 
     template <class ComProtocolT>
-    bool ComBase<ComProtocolT>::openEpoll(void)
+    inline bool ComBase<ComProtocolT>::openEpoll(void)
     {
         if (socket_fd_ == -1)
         {
@@ -137,7 +137,7 @@ namespace ComBase
     }
 
     template <class ComProtocolT>
-    void ComBase<ComProtocolT>::receiver_thread_(void)
+    inline void ComBase<ComProtocolT>::receiver_thread_(void)
     {
         ComProtocolT rx_frame{};
         receiver_thread_running_ = true;
@@ -167,7 +167,7 @@ namespace ComBase
     }
 
     template <class ComProtocolT>
-    void ComBase<ComProtocolT>::write(ComProtocolT *tx_frame) const
+    inline void ComBase<ComProtocolT>::write(ComProtocolT *tx_frame) const
     {
         if (!isOpen())
         {

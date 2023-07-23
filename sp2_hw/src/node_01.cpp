@@ -7,10 +7,9 @@
 
 #include <iostream>
 #include <iomanip>
-#include "sp2_hw/hardware_interface/AsyncSocketCan.hpp"
-#include "sp2_hw/hardware_interface/AsyncUsart.hpp"
-#include "sp2_hw/hardware_interface/SocketCan.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "sp2_hw/hardware_interface/AsyncUsart.hpp"
+#include "sp2_hw/hardware_interface/CanBus.hpp"
 
 void read_can(const can_frame &rx_frame)
 {
@@ -25,23 +24,19 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
     auto node = std::make_shared<rclcpp::Node>("node_01");
     RCLCPP_INFO(node->get_logger(), "node_01 节点已经启动.");
-
-    // std::atomic<bool> running(true);
+    SP2Control::CanBusData can_bus_data;
+    SP2Control::CanBus can_bus("can0", can_bus_data);
 
     // 创建串口读写线程
     // AsyncUsart usart_dbus;
     // std::thread thread(&AsyncUsart::serialThread, &usart_dbus, "/dev/ttyUSB0", 100000, std::ref(running));
 
     // ComBase的子类
-    SocketCan::SocketCan sock("can0", read_can);
-    sock.open();
-
-    // AsyncSocketCan
-    // can::SocketCan sock;
-    // sock.open("can0", read_can);
+    // SocketCan::SocketCan sock;
+    // sock.configure("can0", read_can);
+    // sock.open();
 
     rclcpp::spin(node);
     rclcpp::shutdown();
-    // running = false;
     return 0;
 }

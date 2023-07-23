@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.8)
 project(sp2_hw)
 
+# 为了一些特性所以使用C++20标准
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE debug)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -27,6 +33,7 @@ endif()
 include_directories(include)
 set(SRC_LIST
   src/node_01.cpp
+  src/hardware_interface/CanBus.cpp
   src/hardware_interface/AsyncUsart.cpp
   src/hardware_interface/AsyncSocketCan.cpp)
 add_executable(${PROJECT_NAME} ${SRC_LIST})

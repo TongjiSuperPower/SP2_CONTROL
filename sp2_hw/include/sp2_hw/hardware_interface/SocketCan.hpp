@@ -4,8 +4,8 @@
  * Copyright (c) 2023, Lithesh
  * All rights reserved.
  */
-
-#pragma once
+#ifndef SP2_CONTROL_SOCKET_CAN_HPP
+#define SP2_CONTROL_SOCKET_CAN_HPP
 
 #include "sp2_hw/hardware_interface/ComBase.hpp"
 #include <linux/can.h>
@@ -13,6 +13,9 @@
 #include <functional>
 #include <iomanip>
 
+/**
+ * @todo (Lithesh) 从规范入手的话最好把实现放入cpp文件中
+ */
 namespace SocketCan
 {
     class SocketCan final : public ComBase::ComBase<can_frame>
@@ -29,7 +32,12 @@ namespace SocketCan
             : ComBase<can_frame>(interface, reception_handler){};
 
         void configure(const std::string &interface,
-                       boost::function<void(const can_frame &rx_frame)> reception_handler);
+                       boost::function<void(const can_frame &rx_frame)> reception_handler)
+        {
+            setInterfaceName(interface);
+            passRecptionHandler(reception_handler);
+        };
+
         void read_can(const can_frame &rx_frame);
 
     private:
@@ -37,7 +45,7 @@ namespace SocketCan
         virtual bool openSocket(void) override;
     };
 
-    void SocketCan::read_can(const can_frame &rx_frame)
+    inline void SocketCan::read_can(const can_frame &rx_frame)
     {
         std::cout << "CAN ID: " << std::hex << int(rx_frame.can_id) << ", Data: ";
         for (int j = 0; j < rx_frame.can_dlc; ++j)
@@ -45,15 +53,9 @@ namespace SocketCan
         std::cout << std::endl;
     }
 
-    void SocketCan::configure(const std::string &interface,
-                              boost::function<void(const can_frame &rx_frame)> reception_handler)
+    inline bool SocketCan::openSocket(void)
     {
-        setInterfaceName(interface);
-        passRecptionHandler(reception_handler);
-    }
-
-    bool SocketCan::openSocket(void)
-    { // Open socketCan
+        // Open socketCan
         socket_fd_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
         if (socket_fd_ < 0)
         {
@@ -92,3 +94,5 @@ namespace SocketCan
         return true;
     }
 } // namespace SocketCan
+
+#endif
