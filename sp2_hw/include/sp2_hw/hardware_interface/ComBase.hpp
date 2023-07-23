@@ -44,7 +44,8 @@ namespace ComBase
         void write(ComProtocolT *rx_frame) const;
 
         bool open(void);
-        bool isOpen() { return (socket_fd_ != -1 && epoll_fd_ != -1 && receiver_thread_running_ != 1); };
+        // 只要有一者处在开启状态，就认为ComBase仍处于开启状态
+        bool isOpen() { return (socket_fd_ != -1 || epoll_fd_ != -1 || receiver_thread_running_ == 1); };
         void close(void);
 
     protected:
@@ -162,6 +163,7 @@ namespace ComBase
                     reception_handler_(rx_frame);
                 }
         }
+        receiver_thread_running_ = false;
     }
 
     template <class ComProtocolT>

@@ -24,9 +24,11 @@ namespace SP2Control
         // 一般不会溢出
         int64_t seq;
         int64_t q_circle;
+        rclcpp::Time stamp;
 
         double offset;
         double pos, vel, acc;
+        double eff;
         // (Lithesh)TODO: 可能存在非力控的电机协议
         /**
          * @param  exe_cmd  最终执行指令

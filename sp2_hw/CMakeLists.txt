@@ -9,6 +9,9 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
+set(DEPENDENCIES
+    ament_cmake
+    rclcpp)
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -27,7 +30,7 @@ set(SRC_LIST
   src/hardware_interface/AsyncUsart.cpp
   src/hardware_interface/AsyncSocketCan.cpp)
 add_executable(${PROJECT_NAME} ${SRC_LIST})
-ament_target_dependencies(${PROJECT_NAME} rclcpp) 
+ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES}) 
 
 install(
   DIRECTORY include/
@@ -36,5 +39,5 @@ install(
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp)
+ament_export_dependencies(${DEPENDENCIES})
 ament_package()

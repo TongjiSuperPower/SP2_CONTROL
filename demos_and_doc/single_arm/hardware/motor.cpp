@@ -30,11 +30,10 @@ namespace single_arm
 
   void Motor::read_thread_callback(const can_frame &rx_frame)
   {
-    // RCLCPP_INFO(rclcpp::get_logger("Motor"), "callback");
-    std::cout << "CAN ID: " << std::hex << int(rx_frame.can_id) << ", Data: ";
-    for (int j = 0; j < rx_frame.can_dlc; ++j)
-      std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
-    std::cout << std::endl;
+    // std::cout << "CAN ID: " << std::hex << int(rx_frame.can_id) << ", Data: ";
+    // for (int j = 0; j < rx_frame.can_dlc; ++j)
+    // std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
+    // std::cout << std::endl;
     std::lock_guard<std::mutex> lg(mutex_);
     this->read_buffer_ = rx_frame;
     return;
@@ -48,6 +47,7 @@ namespace single_arm
     }
     socket_can_.configure("can0", std::bind(&Motor::read_thread_callback, this, std::placeholders::_1));
     if (!socket_can_.open())
+      // if (!socket_can_.open("can0", std::bind(&Motor::read_thread_callback, this, std::placeholders::_1)))
       return hardware_interface::CallbackReturn::SUCCESS;
 
     return hardware_interface::CallbackReturn::SUCCESS;
@@ -93,7 +93,7 @@ namespace single_arm
     std::lock_guard<std::mutex> lg(mutex_);
     uint16_t ecd = (read_buffer_.data[0] << 8u) | read_buffer_.data[1];
     // 强转不会越界
-    position_state_ = static_cast<double>(ecd) / 360 * 2 * PI;
+    position_state_ = static_cast<double>(ecd) / 8192 * 2 * PI;
 
     return hardware_interface::return_type::OK;
   }
