@@ -19,6 +19,19 @@ namespace SP2Control
             sleep(5);
 
         std::cout << "CanBus " << bus_name_ << " constructed successfully" << std::endl;
+        // 测试能不能开新的节点
+        /**
+         * ROS2 Hardware并没有外层node的权限，因此只能使用硬编码，后续如果有更新这部分可以重新写
+         * https://github.com/ros-controls/ros2_controllers/blob/master/forward_command_controller/include/forward_command_controller/forward_command_controller.hpp
+         */
+        auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
+        auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
+        auto params = param_listener->get_params();
+
+        auto type = params.rm_2006;
+        RCLCPP_INFO(node_->get_logger(),
+                    "%f",
+                    type.act2eff);
     }
     void CanBus::read()
     {

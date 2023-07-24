@@ -56,8 +56,8 @@ namespace ComBase
     private:
         int epoll_fd_ = -1;
         epoll_event events_[MAX_EVENTS];
-        std::atomic<bool> receiver_thread_running_ = false;
-        std::atomic<bool> terminate_receiver_thread_ = false;
+        std::atomic<bool> receiver_thread_running_{false};
+        std::atomic<bool> terminate_receiver_thread_{false};
 
         bool openEpoll(void);
         void receiver_thread_(void);

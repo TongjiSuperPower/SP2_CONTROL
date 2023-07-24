@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "actuator_coefficient_lib.hpp"
 
 namespace SP2Control
 {
@@ -83,6 +84,7 @@ namespace SP2Control
         std::string bus_name_;
         CanBusData can_bus_data_;
         SocketCan::SocketCan socket_can_{};
+        std::shared_ptr<rclcpp::Node> node_;
 
         can_frame rm_frame_0x200;
         can_frame rm_frame_0x1FF;

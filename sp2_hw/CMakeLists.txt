@@ -35,8 +35,19 @@ set(SRC_LIST
   src/node_01.cpp
   src/hardware_interface/CanBus.cpp
   src/hardware_interface/AsyncUsart.cpp
-  src/hardware_interface/AsyncSocketCan.cpp)
+  src/hardware_interface/AsyncSocketCan.cpp
+  )
 add_executable(${PROJECT_NAME} ${SRC_LIST})
+
+# YAML
+find_package(generate_parameter_library REQUIRED)
+generate_parameter_library(
+  actuator_coefficient_lib # cmake target name for the parameter library
+  src/hardware_interface/ActuatorCoefficient.yaml # path to input yaml file
+)
+target_link_libraries(${PROJECT_NAME} actuator_coefficient_lib)
+# YAML
+
 ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES}) 
 
 install(
