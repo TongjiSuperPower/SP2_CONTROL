@@ -22,7 +22,7 @@ namespace SP2Control
         std::string type;
         uint16_t q_cur;
         uint16_t q_last;
-        uint16_t qd_raw;
+        int16_t qd_raw;
         // 一般不会溢出
         int64_t seq;
         int64_t q_circle;

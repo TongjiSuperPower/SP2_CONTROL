@@ -11,37 +11,13 @@ namespace SP2Control
 {
     const uint8_t kReadCountMax = 20;
 
-    template <typename typeT>
-    void setActCoeffMap(const std::string &type_name, const typeT &type, TYPE2ACTCOEFF_MAP &map)
-    {
-        // 真的太丑了，不知道在现在这个版本下有没有更好的写法
-        ActCoeff act_coeff{};
-        act_coeff.act2pos = type.act2pos;
-        act_coeff.act2vel = type.act2vel;
-        act_coeff.act2eff = type.act2eff;
-        act_coeff.eff2act = type.eff2act;
-        act_coeff.max_out = type.max_out;
-
-        if (map.find(type_name) == map.end())
-            map.emplace(make_pair(type_name, act_coeff));
-    }
-
     CanBus::CanBus(const std::string &name, CanBusData can_bus_data)
         : bus_name_(name), can_bus_data_(can_bus_data)
     {
-        TYPE2ACTCOEFF_MAP type2act_coeff;
-        auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
-        auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
-        auto params = param_listener->get_params();
-        auto type = params.rm_2006;
-
-        setActCoeffMap("rm_2006", params.rm_2006, type2act_coeff);
-        double temp = type2act_coeff.find("rm_2006")->second.act2eff;
-        RCLCPP_INFO(node_->get_logger(), "%f", temp);
-
         socket_can_.configure(bus_name_, std::bind(&CanBus::recvCallback, this, std::placeholders::_1));
-        while (!socket_can_.open())
-            sleep(1);
+        using namespace std::chrono_literals;
+        while ((!socket_can_.open()) && rclcpp::ok())
+            rclcpp::sleep_for(1s);
 
         std::cout << "CanBus " << bus_name_ << " constructed successfully" << std::endl;
     }
@@ -88,6 +64,8 @@ namespace SP2Control
 
                     act_data.vel = act_coeff.act2vel * static_cast<double>(act_data.qd_raw);
                     act_data.eff = act_coeff.act2eff * static_cast<double>(mapped_current);
+                    std::cout << "vel: " << std::setw(10) << act_data.vel
+                              << std::setw(10) << "pos: " << act_data.pos << std::endl;
                     continue;
                     read_cout++;
                 }
@@ -106,10 +84,10 @@ namespace SP2Control
 
     void CanBus::recvCallback(const can_frame &rx_frame)
     {
-        std::cout << "CAN ID: " << std::hex << int(rx_frame.can_id) << ", Data: ";
-        for (int j = 0; j < rx_frame.can_dlc; ++j)
-            std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
-        std::cout << std::endl;
+        // std::cout << "CAN ID: " << std::hex << int(rx_frame.can_id) << ", Data: ";
+        // for (int j = 0; j < rx_frame.can_dlc; ++j)
+        // std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
+        // std::cout << std::endl;
         /* 已是无锁队列，无需再加锁 */
         CanFrameStamp can_frame_stamp{.stamp = rclcpp::Clock().now(),
                                       .frame = rx_frame};
