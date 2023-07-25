@@ -64,15 +64,15 @@ namespace SP2Control
         can_frame frame;
     };
 
+    using ID2ACTDATA_MAP = std::unordered_map<int, ActData>;
+    using TYPE2ACTCOEFF_MAP = std::unordered_map<std::string, ActCoeff>;
+
     /**
      * @brief 一个用于描述can总线的类。该类实现了 \c read() 和 \c write() 方法。
-     *        根据电机协议对数据解包的工作在该类中完成。
+     * @brief 根据电机协议对数据解包的工作在该类中完成。
      */
     class CanBus
     {
-        using ID2ACTDATA_MAP = std::unordered_map<int, ActData>;
-        using TYPE2ACTCOEFF_MAP = std::unordered_map<std::string, ActCoeff>;
-
     public:
         CanBus() = default;
         CanBus(const std::string &name, CanBusData can_bus_data);
@@ -82,9 +82,9 @@ namespace SP2Control
 
     private:
         std::string bus_name_;
+
         CanBusData can_bus_data_;
         SocketCan::SocketCan socket_can_{};
-        std::shared_ptr<rclcpp::Node> node_;
 
         can_frame rm_frame_0x200;
         can_frame rm_frame_0x1FF;

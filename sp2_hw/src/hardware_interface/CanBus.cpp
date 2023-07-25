@@ -11,27 +11,39 @@ namespace SP2Control
 {
     const uint8_t kReadCountMax = 20;
 
+    template <typename typeT>
+    void setActCoeffMap(const std::string &type_name, const typeT &type, TYPE2ACTCOEFF_MAP &map)
+    {
+        // 真的太丑了，不知道在现在这个版本下有没有更好的写法
+        ActCoeff act_coeff{};
+        act_coeff.act2pos = type.act2pos;
+        act_coeff.act2vel = type.act2vel;
+        act_coeff.act2eff = type.act2eff;
+        act_coeff.eff2act = type.eff2act;
+        act_coeff.max_out = type.max_out;
+
+        if (map.find(type_name) == map.end())
+            map.emplace(make_pair(type_name, act_coeff));
+    }
+
     CanBus::CanBus(const std::string &name, CanBusData can_bus_data)
         : bus_name_(name), can_bus_data_(can_bus_data)
     {
-        socket_can_.configure(bus_name_, std::bind(&CanBus::recvCallback, this, std::placeholders::_1));
-        while (!socket_can_.open())
-            sleep(5);
-
-        std::cout << "CanBus " << bus_name_ << " constructed successfully" << std::endl;
-        // 测试能不能开新的节点
-        /**
-         * ROS2 Hardware并没有外层node的权限，因此只能使用硬编码，后续如果有更新这部分可以重新写
-         * https://github.com/ros-controls/ros2_controllers/blob/master/forward_command_controller/include/forward_command_controller/forward_command_controller.hpp
-         */
+        TYPE2ACTCOEFF_MAP type2act_coeff;
         auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
         auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
         auto params = param_listener->get_params();
-
         auto type = params.rm_2006;
-        RCLCPP_INFO(node_->get_logger(),
-                    "%f",
-                    type.act2eff);
+
+        setActCoeffMap("rm_2006", params.rm_2006, type2act_coeff);
+        double temp = type2act_coeff.find("rm_2006")->second.act2eff;
+        RCLCPP_INFO(node_->get_logger(), "%f", temp);
+
+        socket_can_.configure(bus_name_, std::bind(&CanBus::recvCallback, this, std::placeholders::_1));
+        while (!socket_can_.open())
+            sleep(1);
+
+        std::cout << "CanBus " << bus_name_ << " constructed successfully" << std::endl;
     }
     void CanBus::read()
     {
@@ -98,10 +110,10 @@ namespace SP2Control
         for (int j = 0; j < rx_frame.can_dlc; ++j)
             std::cout << std::hex << std::setfill('0') << std::setw(2) << int(rx_frame.data[j]) << " ";
         std::cout << std::endl;
-        // 已是无锁队列，无需再加锁
-        //        CanFrameStamp can_frame_stamp{.stamp = rclcpp::Clock().now(),
-        //.frame = rx_frame};
-        // rx_buffer_.push(can_frame_stamp);
+        /* 已是无锁队列，无需再加锁 */
+        CanFrameStamp can_frame_stamp{.stamp = rclcpp::Clock().now(),
+                                      .frame = rx_frame};
+        rx_buffer_.push(can_frame_stamp);
     }
 
 } // namespace SP2Control

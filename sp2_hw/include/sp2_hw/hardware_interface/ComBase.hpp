@@ -98,7 +98,12 @@ namespace ComBase
         }
         if (!(this->openSocket() && this->openEpoll()))
         {
-            perror("Error creating communication");
+            perror("Error open Socket");
+            return false;
+        }
+        if (!this->openEpoll())
+        {
+            perror("Error open Epoll");
             return false;
         }
 
