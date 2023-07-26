@@ -4,12 +4,13 @@
   <name>sp2_hw</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="sp2control@todo.todo">sp2control</maintainer>
+  <maintainer email="sp2control@todo.todo">LitheshSari</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>hardware_interface</depend>
   <depend>generate_parameter_library</depend>
 
   <test_depend>ament_lint_auto</test_depend>

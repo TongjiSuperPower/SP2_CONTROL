@@ -64,8 +64,8 @@ namespace SP2Control
 
                     act_data.vel = act_coeff.act2vel * static_cast<double>(act_data.qd_raw);
                     act_data.eff = act_coeff.act2eff * static_cast<double>(mapped_current);
-                    std::cout << "vel: " << std::setw(10) << act_data.vel
-                              << std::setw(10) << "pos: " << act_data.pos << std::endl;
+                    // std::cout << "vel: " << std::setw(10) << act_data.vel
+                    //           << std::setw(10) << "pos: " << act_data.pos << std::endl;
                     read_cout++;
                     continue;
                 }

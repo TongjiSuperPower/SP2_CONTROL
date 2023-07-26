@@ -39,14 +39,29 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<rclcpp::Node>("node_01");
-    RCLCPP_INFO(node->get_logger(), "node_01 节点已经启动.");
+    RCLCPP_INFO(node->get_logger(), "sp2_hw 测试节点已经启动.");
 
     //------------------------------IN___TEST___---------------------------------//
     SP2Control::TYPE2ACTCOEFF_MAP type2act_coeff;
     SP2Control::ID2ACTDATA_MAP id2act_data;
     id2act_data.emplace(std::make_pair(0x201, SP2Control::ActData{
+                                                  .name = "joint1_motor",
                                                   .type = "rm_2006",
-                                                  .stamp = rclcpp::Clock().now()}));
+                                                  .q_cur = 0,
+                                                  .q_last = 0,
+                                                  .qd_raw = 0,
+                                                  .seq = 0,
+                                                  .q_circle = 0,
+                                                  .stamp = rclcpp::Clock().now(),
+                                                  .offset = 0,
+                                                  .pos = 0,
+                                                  .vel = 0,
+                                                  .acc = 0,
+                                                  .eff = 0,
+                                                  .exe_cmd = 0,
+                                                  .cmd = 0,
+                                                  .temperature = 25.,
+                                              }));
     auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
     auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
     auto params = param_listener->get_params();
@@ -55,8 +70,6 @@ int main(int argc, char **argv)
 
     SP2Control::CanBusData can_bus_data{.id2act_data_ = &id2act_data, .type2act_coeff_ = &type2act_coeff};
     SP2Control::CanBus can_bus("can0", can_bus_data);
-    // double temp = type2act_coeff.find("rm_2006")->second.act2eff;
-    // RCLCPP_INFO(node_->get_logger(), "%f", temp);
     //------------------------------IN___TEST___---------------------------------//
 
     while (rclcpp::ok())

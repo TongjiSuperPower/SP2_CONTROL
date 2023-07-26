@@ -12,6 +12,7 @@ namespace SP2Control
 
         /**
          * @brief (Lithesh) 实现对于HardwareInfo内关节的解析
+         * @todo  (Lithesh) 记得加try-block，因为可能URDF解析会出问题
          */
         const std::vector<hardware_interface::ComponentInfo> &joint_list = info.joints; // 为了可读性，就不自动推导了
         for (auto &joint : joint_list)
@@ -29,24 +30,24 @@ namespace SP2Control
             if (bus_name2act_data_.find(jnt_bus_name) == bus_name2act_data_.end())
                 bus_name2act_data_.emplace(make_pair(jnt_bus_name, ID2ACTDATA_MAP{}));
             bus_name2act_data_[jnt_bus_name].emplace(std::make_pair(
-                joint.name, ActData{
-                                .name = joint.name,
-                                .type = jnt_type,
-                                .q_cur = 0,
-                                .q_last = 0,
-                                .qd_raw = 0,
-                                .seq = 0,
-                                .q_circle = 0,
-                                .stamp = rclcpp::Clock().now(),
-                                .offset = 0,
-                                .pos = 0,
-                                .vel = 0,
-                                .acc = 0,
-                                .eff = 0,
-                                .exe_cmd = 0,
-                                .cmd = 0,
-                                .temperature = 25.,
-                            }));
+                jnt_id, ActData{
+                            .name = joint.name,
+                            .type = jnt_type,
+                            .q_cur = 0,
+                            .q_last = 0,
+                            .qd_raw = 0,
+                            .seq = 0,
+                            .q_circle = 0,
+                            .stamp = rclcpp::Clock().now(),
+                            .offset = 0,
+                            .pos = 0,
+                            .vel = 0,
+                            .acc = 0,
+                            .eff = 0,
+                            .exe_cmd = 0,
+                            .cmd = 0,
+                            .temperature = 25.,
+                        }));
         }
         /**
          *  ROS2 Hardware并没有外层node的权限，因此只能使用generate_parameter_library(https://github.com/PickNikRobotics/generate_parameter_library)硬编码，
@@ -84,8 +85,16 @@ namespace SP2Control
     {
         std::vector<hardware_interface::StateInterface> state_interfaces;
 
-        state_interfaces.emplace_back(hardware_interface::StateInterface(
-            info_.joints[0].name, hardware_interface::HW_IF_POSITION, &position_state_));
+        for (auto &id2act_data : bus_name2act_data_)
+        {
+            for (auto &act_data : id2act_data.second)
+            {
+                state_interfaces.emplace_back(hardware_interface::StateInterface(
+                    act_data.second.name, hardware_interface::HW_IF_POSITION, &act_data.second.pos));
+                state_interfaces.emplace_back(hardware_interface::StateInterface(
+                    act_data.second.name, hardware_interface::HW_IF_VELOCITY, &act_data.second.vel));
+            }
+        }
 
         return state_interfaces;
     }
@@ -112,8 +121,8 @@ namespace SP2Control
 
     hardware_interface::return_type SP2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
     {
-        for (auto &bus : can_buses_)
-            bus->read(rclcpp::Clock().now());
+        for (auto &can_bus : can_buses_)
+            can_bus->read(rclcpp::Clock().now());
         return hardware_interface::return_type::OK;
     }
 
@@ -138,3 +147,6 @@ namespace SP2Control
     }
 
 } // namespace SP2Control
+
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(SP2Control::SP2Hardware, hardware_interface::SystemInterface)

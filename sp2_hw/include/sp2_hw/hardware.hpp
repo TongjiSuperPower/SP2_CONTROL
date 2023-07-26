@@ -49,7 +49,6 @@ namespace SP2Control
     private:
         std::mutex mutex_;
         double effort_command_;
-        double position_state_;
         TYPE2ACTCOEFF_MAP type2act_coeff_;
         // 未来可能有非can总线电机，因此名字并没有被定位can_bus2act_data_
         std::unordered_map<std::string, ID2ACTDATA_MAP> bus_name2act_data_{};

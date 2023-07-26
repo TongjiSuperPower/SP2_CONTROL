@@ -12,13 +12,26 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # find dependencies
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+  ament_cmake
+  rclcpp
+  hardware_interface
+  pluginlib
+  rclcpp_lifecycle
+)
+
+foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
+
+# YAML
+find_package(generate_parameter_library REQUIRED)
+generate_parameter_library(
+  actuator_coefficient_lib # cmake target name for the parameter library
+  src/hardware_interface/ActuatorCoefficient.yaml # path to input yaml file
+)
 
 include_directories(include)
-set(DEPENDENCIES
-    ament_cmake
-    rclcpp)
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -30,7 +43,10 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
-# EXECUTABLE
+# ------------------------------------------------ EXECUTABLE ------------------------------------------------ #
+set(DEPENDENCIES
+    ament_cmake
+    rclcpp)
 set(EXE_SRC_LIST
   src/node_01.cpp
   src/hardware_interface/CanBus.cpp
@@ -38,25 +54,38 @@ set(EXE_SRC_LIST
   src/hardware_interface/AsyncSocketCan.cpp
   )
 add_executable(${PROJECT_NAME}_exe ${EXE_SRC_LIST})
-
-# YAML
-find_package(generate_parameter_library REQUIRED)
-generate_parameter_library(
-  actuator_coefficient_lib # cmake target name for the parameter library
-  src/hardware_interface/ActuatorCoefficient.yaml # path to input yaml file
-)
 target_link_libraries(${PROJECT_NAME}_exe PRIVATE actuator_coefficient_lib)
 # YAML
 ament_target_dependencies(${PROJECT_NAME}_exe PUBLIC ${DEPENDENCIES}) 
 set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-# EXECUTABLE
+# ------------------------------------------------ EXECUTABLE ------------------------------------------------ #
 
+# ------------------------------------------------- LIBRARY ------------------------------------------------- #
+pluginlib_export_plugin_description_file(hardware_interface plugins.xml)
+set(LIB_SRC_LIST
+  src/hardware.cpp
+  src/hardware_interface/CanBus.cpp
+  src/hardware_interface/AsyncUsart.cpp
+  src/hardware_interface/AsyncSocketCan.cpp
+)
+add_library(${PROJECT_NAME}_lib SHARED ${LIB_SRC_LIST})
+target_link_libraries(${PROJECT_NAME}_lib PRIVATE actuator_coefficient_lib)
+ament_target_dependencies(${PROJECT_NAME}_lib PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS}) 
+set_target_properties(${PROJECT_NAME}_lib PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+# ------------------------------------------------- LIBRARY ------------------------------------------------- #
 install(
   DIRECTORY include/
   DESTINATION include/
 )
 install(TARGETS ${PROJECT_NAME}_exe DESTINATION lib/${PROJECT_NAME})
-
+install(TARGETS ${PROJECT_NAME}_lib
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+install(DIRECTORY launch
+DESTINATION share/${PROJECT_NAME}/
+)
 ament_export_include_directories(include)
-ament_export_dependencies(${DEPENDENCIES})
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()

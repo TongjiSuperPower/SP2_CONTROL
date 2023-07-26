@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<robot name="single_arm_robot">
+	<link name="world_link"/>
+
+	<link name="base_link">
+		<visual>
+			<geometry>
+				<box size="0.1 0.1 0.6"/>
+			</geometry>
+			<origin xyz="0.0 0.0 0.3" rpy="0.0 0.0 0.0"/>
+		</visual>
+	</link>
+
+	<link name="arm_link">
+		<visual>
+			<geometry>
+				<cylinder radius="0.05" length="0.5"/>
+			</geometry>
+			<origin xyz="0.0 0.0 0.20" rpy="0.0 0.0 0.0"/>
+			<material name="white">
+				<color rgba="1 1 1 1"/>
+			</material>
+		</visual>
+	</link>
+
+	<joint name="base_joint" type="fixed">
+		<parent link="world_link"/>
+		<child link="base_link"/>
+	</joint>
+
+	<joint name="arm_joint" type="continuous">
+		<axis xyz="0.0 1 0.0"/>
+		<parent link="base_link"/>
+		<child link="arm_link"/>
+		<origin xyz="0.0 -0.1 0.55" rpy="0.0 0.0 0.0"/>
+	</joint>
+
+	<ros2_control name="tmp" type="system">
+		<hardware>
+			<plugin>SP2Control/SP2Hardware</plugin>
+			<!-- <plugin>mock_components/GenericSystem</plugin> -->
+		</hardware>
+		<joint name="arm_joint">
+			<command_interface name="position"/>
+			<state_interface name="position"/>
+			<state_interface name="velocity"/>
+			<param name="bus_name">can0</param>
+			<param name="type">rm_2006</param>
+			<param name="ID">0x201</param>
+		</joint>
+	</ros2_control>
+
+</robot>

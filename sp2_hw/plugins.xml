@@ -1,0 +1,9 @@
+<library path="sp2_hw">
+  <class name="SP2Control/SP2Hardware"
+         type="SP2Control::SP2Hardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+        SP2Hardware, the bridge between hardware and software.
+    </description>
+  </class>
+</library>
