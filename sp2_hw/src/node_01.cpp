@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     //------------------------------IN___TEST___---------------------------------//
 
     while (rclcpp::ok())
-        can_bus.read();
+        can_bus.read(rclcpp::Clock().now());
 
     // 创建串口读写线程
     // AsyncUsart usart_dbus;

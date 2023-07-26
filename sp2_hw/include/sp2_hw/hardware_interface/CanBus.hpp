@@ -77,7 +77,7 @@ namespace SP2Control
         CanBus() = default;
         CanBus(const std::string &name, CanBusData can_bus_data);
 
-        void read();
+        void read(const rclcpp::Time &time);
         void write();
 
     private:

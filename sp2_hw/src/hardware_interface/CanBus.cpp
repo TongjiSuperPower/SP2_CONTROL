@@ -21,7 +21,7 @@ namespace SP2Control
 
         std::cout << "CanBus " << bus_name_ << " constructed successfully" << std::endl;
     }
-    void CanBus::read()
+    void CanBus::read(const rclcpp::Time &time)
     {
         CanFrameStamp can_frame_stamp;
         /**
@@ -66,8 +66,8 @@ namespace SP2Control
                     act_data.eff = act_coeff.act2eff * static_cast<double>(mapped_current);
                     std::cout << "vel: " << std::setw(10) << act_data.vel
                               << std::setw(10) << "pos: " << act_data.pos << std::endl;
-                    continue;
                     read_cout++;
+                    continue;
                 }
             }
             /*

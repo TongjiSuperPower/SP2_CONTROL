@@ -15,6 +15,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
+include_directories(include)
 set(DEPENDENCIES
     ament_cmake
     rclcpp)
@@ -29,15 +30,14 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-include_directories(include)
-set(SRC_LIST
+# EXECUTABLE
+set(EXE_SRC_LIST
   src/node_01.cpp
   src/hardware_interface/CanBus.cpp
   src/hardware_interface/AsyncUsart.cpp
   src/hardware_interface/AsyncSocketCan.cpp
   )
-add_executable(${PROJECT_NAME} ${SRC_LIST})
+add_executable(${PROJECT_NAME}_exe ${EXE_SRC_LIST})
 
 # YAML
 find_package(generate_parameter_library REQUIRED)
@@ -45,16 +45,17 @@ generate_parameter_library(
   actuator_coefficient_lib # cmake target name for the parameter library
   src/hardware_interface/ActuatorCoefficient.yaml # path to input yaml file
 )
-target_link_libraries(${PROJECT_NAME} actuator_coefficient_lib)
+target_link_libraries(${PROJECT_NAME}_exe PRIVATE actuator_coefficient_lib)
 # YAML
-
-ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES}) 
+ament_target_dependencies(${PROJECT_NAME}_exe PUBLIC ${DEPENDENCIES}) 
+set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+# EXECUTABLE
 
 install(
   DIRECTORY include/
   DESTINATION include/
 )
-install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME}_exe DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_export_dependencies(${DEPENDENCIES})

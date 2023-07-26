@@ -11,6 +11,44 @@ namespace SP2Control
         }
 
         /**
+         * @brief (Lithesh) 实现对于HardwareInfo内关节的解析
+         */
+        const std::vector<hardware_interface::ComponentInfo> &joint_list = info.joints; // 为了可读性，就不自动推导了
+        for (auto &joint : joint_list)
+        {
+            if (joint.parameters.find("bus_name") == joint.parameters.end())
+            {
+                // 假设URDF没有这一个键值对，就直接跳过对于该joint的解析
+                std::cout << joint.name << " does not declare bus_name in URDF." << std::endl;
+                continue;
+            }
+            const std::string &jnt_bus_name = joint.parameters.find("bus_name")->second;
+            const std::string &jnt_type = joint.parameters.find("type")->second;
+            const int jnt_id = std::stod(joint.parameters.find("ID")->second);
+            // 如果还没有建立第一层哈希表，则建立
+            if (bus_name2act_data_.find(jnt_bus_name) == bus_name2act_data_.end())
+                bus_name2act_data_.emplace(make_pair(jnt_bus_name, ID2ACTDATA_MAP{}));
+            bus_name2act_data_[jnt_bus_name].emplace(std::make_pair(
+                joint.name, ActData{
+                                .name = joint.name,
+                                .type = jnt_type,
+                                .q_cur = 0,
+                                .q_last = 0,
+                                .qd_raw = 0,
+                                .seq = 0,
+                                .q_circle = 0,
+                                .stamp = rclcpp::Clock().now(),
+                                .offset = 0,
+                                .pos = 0,
+                                .vel = 0,
+                                .acc = 0,
+                                .eff = 0,
+                                .exe_cmd = 0,
+                                .cmd = 0,
+                                .temperature = 25.,
+                            }));
+        }
+        /**
          *  ROS2 Hardware并没有外层node的权限，因此只能使用generate_parameter_library(https://github.com/PickNikRobotics/generate_parameter_library)硬编码，
          *  后续如果有更新这部分可以重新写(https://github.com/ros-controls/ros2_control/issues/347)
          *  https://github.com/ros-controls/ros2_controllers/blob/master/forward_command_controller/include/forward_command_controller/forward_command_controller.hpp
@@ -24,8 +62,15 @@ namespace SP2Control
         auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
         auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
         actuator_coefficient::Params params = param_listener->get_params();
-
         setActCoeffMap("rm_2006", params.rm_2006, type2act_coeff_);
+
+        for (auto &bus : bus_name2act_data_)
+        {
+            can_buses_.emplace_back(std::make_unique<CanBus>(bus.first,
+                                                             CanBusData{
+                                                                 .id2act_data_ = &bus.second,
+                                                                 .type2act_coeff_ = &type2act_coeff_}));
+        }
 
         return hardware_interface::CallbackReturn::SUCCESS;
     }
@@ -67,7 +112,8 @@ namespace SP2Control
 
     hardware_interface::return_type SP2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
     {
-
+        for (auto &bus : can_buses_)
+            bus->read(rclcpp::Clock().now());
         return hardware_interface::return_type::OK;
     }
 
