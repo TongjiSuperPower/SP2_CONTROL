@@ -64,6 +64,7 @@ namespace SP2Control
         auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
         actuator_coefficient::Params params = param_listener->get_params();
         setActCoeffMap("rm_2006", params.rm_2006, type2act_coeff_);
+        setActCoeffMap("rm_3508", params.rm_3508, type2act_coeff_);
 
         for (auto &bus : bus_name2act_data_)
         {
