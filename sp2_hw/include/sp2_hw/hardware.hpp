@@ -1,3 +1,9 @@
+/*******************************************************************************
+ * BSD 3-Clause License
+ *
+ * Copyright (c) 2023, Lithesh
+ * All rights reserved.
+ */
 #ifndef SP2_CONTROL_HARDWARE_HPP
 #define SP2_CONTROL_HARDWARE_HPP
 

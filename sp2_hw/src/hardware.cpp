@@ -1,4 +1,9 @@
-
+/*******************************************************************************
+ * BSD 3-Clause License
+ *
+ * Copyright (c) 2023, Lithesh
+ * All rights reserved.
+ */
 #include "sp2_hw/hardware.hpp"
 
 namespace SP2Control
@@ -53,8 +58,7 @@ namespace SP2Control
          *  ROS2 Hardware并没有外层node的权限，因此只能使用generate_parameter_library(https://github.com/PickNikRobotics/generate_parameter_library)硬编码，
          *  后续如果有更新这部分可以重新写(https://github.com/ros-controls/ros2_control/issues/347)
          *  https://github.com/ros-controls/ros2_controllers/blob/master/forward_command_controller/include/forward_command_controller/forward_command_controller.hpp
-         *  我真的不想写接下来的这段代码，但是ROS2不仅不支持全局parameter，而且目前似乎并没有类似于ROS1的XmlRpcValue数据
-         *  类型，所以很难表达多层进的参数列表。
+         *  我真的不想写接下来的这段代码，但是ROS2不仅不支持全局parameter，而且目前似乎并没有类似于ROS1的XmlRpcValue数据类型，所以很难表达多层进的参数列表。
          *  希望的Feature如下：
          *  recursive_map = node->get_parameter("namespace");
          *  其中recursive_map是类多层哈希表结构，可以起到下述类似效果
