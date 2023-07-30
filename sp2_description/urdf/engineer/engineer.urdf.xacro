@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="engineer">
+	<xacro:include filename="$(find sp2_description)/urdf/engineer/engineer_chassis/engineer_chassis.xacro"/>
+
+	<xacro:arg name="use_simulation" default="true"/>
+	<xacro:engineer_chassis roller_type="simple"/>
+	
+	<gazebo>
+		<plugin name="gazebo_ros2_control" filename="libgazebo_ros_control.so">
+			<robotNamespace>/</robotNamespace>
+		</plugin>
+	</gazebo>
+	
+</robot>
+
