@@ -98,6 +98,8 @@ namespace SP2Control
                     act_data.second.name, hardware_interface::HW_IF_POSITION, &act_data.second.pos));
                 state_interfaces.emplace_back(hardware_interface::StateInterface(
                     act_data.second.name, hardware_interface::HW_IF_VELOCITY, &act_data.second.vel));
+                state_interfaces.emplace_back(hardware_interface::StateInterface(
+                    act_data.second.name, hardware_interface::HW_IF_EFFORT, &act_data.second.eff));
             }
         }
 
@@ -108,9 +110,14 @@ namespace SP2Control
     {
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-        command_interfaces.emplace_back(hardware_interface::CommandInterface(
-            info_.joints[0].name, hardware_interface::HW_IF_POSITION, &effort_command_));
-
+        for (auto &id2act_data : bus_name2act_data_)
+        {
+            for (auto &act_data : id2act_data.second)
+            {
+                command_interfaces.emplace_back(hardware_interface::CommandInterface(
+                    act_data.second.name, hardware_interface::HW_IF_EFFORT, &act_data.second.exe_cmd));
+            }
+        }
         return command_interfaces;
     }
 
