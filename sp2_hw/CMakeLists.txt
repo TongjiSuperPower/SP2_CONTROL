@@ -59,6 +59,12 @@ target_link_libraries(${PROJECT_NAME}_exe PRIVATE actuator_coefficient_lib)
 ament_target_dependencies(${PROJECT_NAME}_exe PUBLIC ${DEPENDENCIES}) 
 set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 # ------------------------------------------------ EXECUTABLE ------------------------------------------------ #
+# ------------------------------------------------ UTILITIES ------------------------------------------------ #
+find_package(realtime_tools REQUIRED)
+find_package(sensor_msgs REQUIRED)
+add_executable(fake_mecanum_joint_publisher src/utilities/fake_mecanum_joint_publisher.cpp) 
+ament_target_dependencies(fake_mecanum_joint_publisher PUBLIC ${DEPENDENCIES} realtime_tools sensor_msgs) 
+# ------------------------------------------------ UTILITIES ------------------------------------------------ #
 
 # ------------------------------------------------- LIBRARY ------------------------------------------------- #
 pluginlib_export_plugin_description_file(hardware_interface plugins.xml)
@@ -77,7 +83,8 @@ install(
   DIRECTORY include/
   DESTINATION include/
 )
-install(TARGETS ${PROJECT_NAME}_exe DESTINATION lib/${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME}_exe fake_mecanum_joint_publisher
+  DESTINATION lib/${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME}_lib
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
