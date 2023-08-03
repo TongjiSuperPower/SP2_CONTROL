@@ -70,6 +70,18 @@ namespace SP2Control
         setActCoeffMap("rm_2006", params.rm_2006, type2act_coeff_);
         setActCoeffMap("rm_3508", params.rm_3508, type2act_coeff_);
 
+        YAML::Node config;
+        try
+        {
+            std::string PKG_SHARE_PATH(PROJECT_SHARE_PATH);
+            config = YAML::LoadFile(PKG_SHARE_PATH + "/share/sp2_hw/config/actuator_coefficient.yaml");
+        }
+        catch (YAML::BadFile &e)
+        {
+            std::cout << "Error reading actuator coefficient YAML file" << std::endl;
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+        std::cout << config << std::endl;
         for (auto &bus : bus_name2act_data_)
         {
             can_buses_.emplace_back(std::make_unique<CanBus>(bus.first,

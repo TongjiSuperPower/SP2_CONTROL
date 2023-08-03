@@ -24,7 +24,6 @@ namespace utilities
 
     private:
         std::shared_ptr<rclcpp::Node> node_;
-        const size_t kNumJoints = 64;
         std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> joint_state_publisher_;
         std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
             realtime_joint_state_publisher_;

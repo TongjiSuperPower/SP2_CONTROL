@@ -18,6 +18,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   hardware_interface
   pluginlib
   rclcpp_lifecycle
+  yaml-cpp
 )
 
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -62,8 +63,9 @@ set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME ${PROJECT_NAME}
 # ------------------------------------------------ UTILITIES ------------------------------------------------ #
 find_package(realtime_tools REQUIRED)
 find_package(sensor_msgs REQUIRED)
-add_executable(fake_mecanum_joint_publisher src/utilities/fake_mecanum_joint_publisher.cpp) 
-ament_target_dependencies(fake_mecanum_joint_publisher PUBLIC ${DEPENDENCIES} realtime_tools sensor_msgs) 
+set (FAKE_PUBLISHER fake_mecanum_joint_publisher)
+add_executable(${FAKE_PUBLISHER} src/utilities/fake_mecanum_joint_publisher.cpp) 
+ament_target_dependencies(${FAKE_PUBLISHER} PUBLIC ${DEPENDENCIES} realtime_tools sensor_msgs)
 # ------------------------------------------------ UTILITIES ------------------------------------------------ #
 
 # ------------------------------------------------- LIBRARY ------------------------------------------------- #
@@ -74,14 +76,23 @@ set(LIB_SRC_LIST
   src/hardware_interface/AsyncUsart.cpp
   src/hardware_interface/AsyncSocketCan.cpp
 )
+set(PROJECT_SHARE_PATH ${CMAKE_INSTALL_PREFIX})
+configure_file(config/config.h.in ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/config.h)
+
 add_library(${PROJECT_NAME}_lib SHARED ${LIB_SRC_LIST})
-target_link_libraries(${PROJECT_NAME}_lib PRIVATE actuator_coefficient_lib)
+target_link_libraries(${PROJECT_NAME}_lib PRIVATE actuator_coefficient_lib yaml-cpp)
 ament_target_dependencies(${PROJECT_NAME}_lib PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS}) 
 set_target_properties(${PROJECT_NAME}_lib PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 # ------------------------------------------------- LIBRARY ------------------------------------------------- #
 install(
   DIRECTORY include/
   DESTINATION include/
+)
+# https://answers.ros.org/question/363112/how-to-see-compiler-invocation-in-colcon-build/
+# message(WARINING "This is config install path: " ${CMAKE_INSTALL_PREFIX})
+install(
+  DIRECTORY config 
+  DESTINATION share/${PROJECT_NAME}/
 )
 install(TARGETS ${PROJECT_NAME}_exe fake_mecanum_joint_publisher
   DESTINATION lib/${PROJECT_NAME})

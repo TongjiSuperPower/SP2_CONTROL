@@ -61,8 +61,6 @@ namespace SP2Control
                     // convert raw data into standard ActuatorState
                     act_data.pos = act_coeff.act2pos *
                                    static_cast<double>(act_data.q_cur + 8192 * act_data.q_circle - act_data.offset);
-
-                    act_data.pos = act_data.pos / 19;
                     act_data.vel = act_coeff.act2vel * static_cast<double>(act_data.qd_raw);
                     act_data.eff = act_coeff.act2eff * static_cast<double>(mapped_current);
                     // std::cout << "vel: " << std::setw(10) << act_data.vel

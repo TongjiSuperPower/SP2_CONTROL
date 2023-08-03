@@ -32,15 +32,14 @@ namespace utilities
             }
         }
     }
+
     void fake_joint_publisher::update()
     {
         if (realtime_joint_state_publisher_ && realtime_joint_state_publisher_->trylock())
         {
             auto &joint_state_msg = realtime_joint_state_publisher_->msg_;
-
             joint_state_msg.header.stamp = rclcpp::Clock().now();
-
-            // update joint state message and dynamic joint state message
+            // 伪造麦轮棍子的数据
             for (size_t i = 0; i < name_prefix.size(); ++i)
             {
                 size_t num_suffix = name_suffix.size();
@@ -60,10 +59,16 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<rclcpp::Node>("fake_mecanum_joint_publisher");
+    // 伪发布器没有必要频率很高
+    rclcpp::WallRate loop_rate(1.0);
     utilities::fake_joint_publisher fake_joint_publisher(node);
     fake_joint_publisher.init();
     while (rclcpp::ok())
+    {
         fake_joint_publisher.update();
+        loop_rate.sleep();
+    }
+
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

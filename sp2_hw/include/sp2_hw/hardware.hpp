@@ -24,6 +24,10 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
 #include "sp2_hw/hardware_interface/CanBus.hpp"
+// parse YAML
+#include "yaml-cpp/yaml.h"
+#include "sp2_hw/config.h"
+#include <fstream>
 
 namespace SP2Control
 {
