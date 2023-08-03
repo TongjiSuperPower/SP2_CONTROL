@@ -13,9 +13,11 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include "actuator_coefficient_lib.hpp"
+#include <cmath>
 
 namespace SP2Control
 {
+    constexpr uint8_t kRingBufferSize = 48;
     struct ActData
     {
         std::string name;
@@ -31,7 +33,7 @@ namespace SP2Control
         double offset;
         double pos, vel, acc;
         double eff;
-        // (Lithesh)TODO: 可能存在非力控的电机协议
+        // TODO: 可能存在非力控的电机协议
         /**
          * @param  exe_cmd  最终执行指令
          * @param  cmd      未加可能额外限制的指令
@@ -89,7 +91,7 @@ namespace SP2Control
         can_frame rm_frame_0x200;
         can_frame rm_frame_0x1FF;
 
-        boost::lockfree::spsc_queue<CanFrameStamp> rx_buffer_{20};
+        boost::lockfree::spsc_queue<CanFrameStamp> rx_buffer_{kRingBufferSize};
         void recvCallback(const can_frame &rx_frame);
     };
 

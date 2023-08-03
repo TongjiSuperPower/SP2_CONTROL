@@ -45,7 +45,7 @@ namespace ComBase
 
         bool open(void);
         // 只要有一者处在开启状态，就认为ComBase仍处于开启状态
-        bool isOpen() { return (socket_fd_ != -1 || epoll_fd_ != -1 || receiver_thread_running_ == 1); };
+        bool isOpen() const { return (socket_fd_ != -1 || epoll_fd_ != -1 || receiver_thread_running_ == 1); };
         void close(void);
 
     protected:

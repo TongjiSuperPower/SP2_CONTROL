@@ -81,7 +81,7 @@ namespace SP2Control
             std::cout << "Error reading actuator coefficient YAML file" << std::endl;
             return hardware_interface::CallbackReturn::ERROR;
         }
-        std::cout << config << std::endl;
+        const YAML::Node &actuator_coefficient_yaml = config["actuator_coeffiecient"];
         for (auto &bus : bus_name2act_data_)
         {
             can_buses_.emplace_back(std::make_unique<CanBus>(bus.first,

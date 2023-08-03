@@ -38,12 +38,27 @@ namespace SocketCan
             passRecptionHandler(reception_handler);
         };
 
+        void write(can_frame *tx_frame) const;
         void read_can(const can_frame &rx_frame);
 
     private:
         ifreq ifr_{};
         virtual bool openSocket(void) override;
     };
+
+    inline void SocketCan::write(can_frame *tx_frame) const
+    {
+        if (!isOpen())
+        {
+            printf("Unable to write: SocketCan %s not open.", interface_name_);
+            return;
+        }
+        if (::write(socket_fd_, tx_frame, sizeof(can_frame)) == -1)
+        {
+            printf("Unable to write: SocketCan %s tx buffer may be full.", interface_name_);
+            return;
+        }
+    }
 
     inline void SocketCan::read_can(const can_frame &rx_frame)
     {

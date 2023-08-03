@@ -70,15 +70,15 @@ ament_target_dependencies(${FAKE_PUBLISHER} PUBLIC ${DEPENDENCIES} realtime_tool
 
 # ------------------------------------------------- LIBRARY ------------------------------------------------- #
 pluginlib_export_plugin_description_file(hardware_interface plugins.xml)
+
+set(PROJECT_SHARE_PATH ${CMAKE_INSTALL_PREFIX})
+configure_file(config/config.h.in ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/config.h)
 set(LIB_SRC_LIST
   src/hardware.cpp
   src/hardware_interface/CanBus.cpp
   src/hardware_interface/AsyncUsart.cpp
   src/hardware_interface/AsyncSocketCan.cpp
 )
-set(PROJECT_SHARE_PATH ${CMAKE_INSTALL_PREFIX})
-configure_file(config/config.h.in ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/config.h)
-
 add_library(${PROJECT_NAME}_lib SHARED ${LIB_SRC_LIST})
 target_link_libraries(${PROJECT_NAME}_lib PRIVATE actuator_coefficient_lib yaml-cpp)
 ament_target_dependencies(${PROJECT_NAME}_lib PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS}) 
