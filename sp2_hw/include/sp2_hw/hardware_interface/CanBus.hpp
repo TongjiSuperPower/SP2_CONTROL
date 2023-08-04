@@ -47,7 +47,7 @@ namespace SP2Control
     struct ActCoeff
     {
         double act2pos, act2vel, act2eff;
-        double pos2act, vel2cat, eff2act;
+        double pos2act, vel2act, eff2act;
         double max_out;
     };
 

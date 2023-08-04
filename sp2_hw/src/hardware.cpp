@@ -8,6 +8,15 @@
 
 namespace SP2Control
 {
+    void plot(const std::unordered_map<std::string, ActCoeff> &map)
+    {
+        for (auto it = map.begin(); it != map.end(); ++it)
+        {
+            std::cout << it->first << std::endl;
+            std::cout << "    "
+                      << "act2pos: " << it->second.act2pos << std::endl;
+        }
+    }
     hardware_interface::CallbackReturn SP2Hardware::on_init(const hardware_interface::HardwareInfo &info)
     {
         if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
@@ -64,11 +73,11 @@ namespace SP2Control
          *  其中recursive_map是类多层哈希表结构，可以起到下述类似效果
          *  using RECURSIVE_MAP = unordered_map<std::string, RECURSIVE_MAP>
          */
-        auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
-        auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
-        actuator_coefficient::Params params = param_listener->get_params();
-        setActCoeffMap("rm_2006", params.rm_2006, type2act_coeff_);
-        setActCoeffMap("rm_3508", params.rm_3508, type2act_coeff_);
+        // auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
+        // auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
+        // actuator_coefficient::Params params = param_listener->get_params();
+        // setActCoeffMap("rm_2006", params.rm_2006, type2act_coeff_);
+        // setActCoeffMap("rm_3508", params.rm_3508, type2act_coeff_);
 
         YAML::Node config;
         try
@@ -81,7 +90,35 @@ namespace SP2Control
             std::cout << "Error reading actuator coefficient YAML file" << std::endl;
             return hardware_interface::CallbackReturn::ERROR;
         }
-        const YAML::Node &actuator_coefficient_yaml = config["actuator_coeffiecient"];
+        const YAML::Node &actuator_coefficient_map = config["actuator_coefficient"];
+        for (YAML::const_iterator it = actuator_coefficient_map.begin(); it != actuator_coefficient_map.end(); ++it)
+        {
+            auto &param_list = it->second;
+            std::vector<std::string> param_names{"act2pos", "act2vel", "act2eff", "eff2act", "max_out"};
+            bool isErrorExists = false;
+            for (const std::string &param_name : param_names)
+            {
+                if (!param_list[param_name].IsDefined())
+                {
+                    printf("motor %s missing parameter: %s", it->first.as<std::string>().c_str(), param_name.c_str());
+                    isErrorExists = true;
+                }
+            }
+            if (isErrorExists)
+                continue;
+            type2act_coeff_.emplace(std::make_pair(it->first.as<std::string>(),
+                                                   ActCoeff{
+                                                       .act2pos = param_list["act2pos"].as<double>(),
+                                                       .act2vel = param_list["act2vel"].as<double>(),
+                                                       .act2eff = param_list["act2eff"].as<double>(),
+                                                       .pos2act = (1.0 / param_list["act2pos"].as<double>()),
+                                                       .vel2act = (1.0 / param_list["act2vel"].as<double>()),
+                                                       .eff2act = (1.0 / param_list["act2eff"].as<double>()),
+                                                       .max_out = param_list["max_out"].as<double>(),
+                                                   }));
+        }
+        plot(type2act_coeff_);
+
         for (auto &bus : bus_name2act_data_)
         {
             can_buses_.emplace_back(std::make_unique<CanBus>(bus.first,
