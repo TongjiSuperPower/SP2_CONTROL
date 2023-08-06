@@ -62,12 +62,16 @@ namespace SP2Control
 
     private:
         std::mutex mutex_;
+
         TYPE2ACTCOEFF_MAP type2act_coeff_;
-        std::vector<JntData> jnt_data_;
         // 未来可能有非can总线电机，因此名字并没有被定位can_bus2act_data_
         std::unordered_map<std::string, ID2ACTDATA_MAP> bus_name2act_data_{};
-        std::unordered_map<std::string, JntData *> jnt_name2jnt_data_ptr_;
         std::vector<std::unique_ptr<CanBus>> can_buses_;
+        // Transmission
+        std::vector<JntData> jnt_data_;
+        std::unordered_map<std::string, JntData *> jnt_name2jnt_data_ptr_{};
+        std::vector<std::shared_ptr<transmission_interface::Transmission>> jnt2act_transmissions_;
+        std::vector<std::shared_ptr<transmission_interface::Transmission>> act2jnt_transmissions_;
 
         template <typename typeT>
         void setActCoeffMap(const std::string &type_name, const typeT &type, TYPE2ACTCOEFF_MAP &map);

@@ -115,7 +115,6 @@ namespace SP2Control
                 int id = id2act_data.first - 0x201;
                 double cmd =
                     limitAmplitude(act_coeff.eff2act * id2act_data.second.exe_cmd, act_coeff.max_out);
-                // ROS_INFO_STREAM(act_coeff.effort2act * id2act_data.second.exe_effort);
                 if (-1 < id && id < 4)
                 {
                     rm_frame_0x200_.data[2 * id] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
@@ -142,7 +141,7 @@ namespace SP2Control
         rm_frame_0x1FF_.can_id = 0x1FF;
         rm_frame_0x200_.can_dlc = 8;
         rm_frame_0x1FF_.can_dlc = 8;
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; ++i)
         {
             rm_frame_0x200_.data[i] = 0x00;
             rm_frame_0x1FF_.data[i] = 0x00;
