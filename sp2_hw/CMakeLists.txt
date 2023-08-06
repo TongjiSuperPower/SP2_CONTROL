@@ -15,9 +15,10 @@ endif()
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   ament_cmake
   rclcpp
-  hardware_interface
-  pluginlib
   rclcpp_lifecycle
+  hardware_interface
+  transmission_interface
+  pluginlib
   yaml-cpp
 )
 

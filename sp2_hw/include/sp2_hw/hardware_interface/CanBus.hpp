@@ -18,9 +18,27 @@
 namespace SP2Control
 {
     constexpr uint8_t kRingBufferSize = 48;
-    struct ActData
+
+    struct JntData
     {
         std::string name;
+        double pos, vel, acc;
+        double eff;
+        double cmd;
+
+        JntData() = default;
+        JntData(std::string _name) : name(_name)
+        {
+            pos = 0;
+            vel = 0;
+            acc = 0;
+            eff = 0;
+            cmd = 0;
+        }
+    };
+
+    struct ActData : JntData
+    {
         std::string type;
         uint16_t q_cur;
         uint16_t q_last;
@@ -29,19 +47,29 @@ namespace SP2Control
         int64_t seq;
         int64_t q_circle;
         rclcpp::Time stamp;
-
         double offset;
-        double pos, vel, acc;
-        double eff;
         // TODO: 可能存在非力控的电机协议
         /**
          * @param  exe_cmd  最终执行指令
          * @param  cmd      未加可能额外限制的指令
          */
-        double exe_cmd, cmd;
+        double exe_cmd;
+        double temperature;
         bool is_halted = false;
 
-        double temperature;
+        ActData() : JntData(){};
+        ActData(std::string _name, std::string _type, rclcpp::Time _stamp)
+            : JntData(_name), type(_type), stamp(_stamp)
+        {
+            q_cur = 0;
+            q_last = 0;
+            qd_raw = 0;
+            seq = 0;
+            q_circle = 0;
+            offset = 0;
+            exe_cmd = 0;
+            temperature = 25.;
+        };
     };
 
     struct ActCoeff
@@ -78,6 +106,7 @@ namespace SP2Control
     public:
         CanBus() = default;
         CanBus(const std::string &name, CanBusData can_bus_data);
+        ~CanBus();
 
         void read(const rclcpp::Time &time);
         void write();
@@ -88,8 +117,8 @@ namespace SP2Control
         CanBusData can_bus_data_;
         SocketCan::SocketCan socket_can_{};
 
-        can_frame rm_frame_0x200;
-        can_frame rm_frame_0x1FF;
+        can_frame rm_frame_0x200_;
+        can_frame rm_frame_0x1FF_;
 
         boost::lockfree::spsc_queue<CanFrameStamp> rx_buffer_{kRingBufferSize};
         void recvCallback(const can_frame &rx_frame);

@@ -44,24 +44,7 @@ int main(int argc, char **argv)
     //------------------------------IN___TEST___---------------------------------//
     SP2Control::TYPE2ACTCOEFF_MAP type2act_coeff;
     SP2Control::ID2ACTDATA_MAP id2act_data;
-    id2act_data.emplace(std::make_pair(0x201, SP2Control::ActData{
-                                                  .name = "joint1_motor",
-                                                  .type = "rm_2006",
-                                                  .q_cur = 0,
-                                                  .q_last = 0,
-                                                  .qd_raw = 0,
-                                                  .seq = 0,
-                                                  .q_circle = 0,
-                                                  .stamp = rclcpp::Clock().now(),
-                                                  .offset = 0,
-                                                  .pos = 0,
-                                                  .vel = 0,
-                                                  .acc = 0,
-                                                  .eff = 0,
-                                                  .exe_cmd = 0,
-                                                  .cmd = 0,
-                                                  .temperature = 25.,
-                                              }));
+    id2act_data.emplace(std::make_pair(0x201, SP2Control::ActData("joint1_motor", "rm_2006", rclcpp::Clock().now())));
     auto node_ = std::make_shared<rclcpp::Node>("actuator_coefficient");
     auto param_listener = std::make_shared<actuator_coefficient::ParamListener>(node_);
     auto params = param_listener->get_params();

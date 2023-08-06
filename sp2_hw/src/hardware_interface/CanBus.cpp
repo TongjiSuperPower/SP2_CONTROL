@@ -36,7 +36,10 @@ namespace SP2Control
         using namespace std::chrono_literals;
         while ((!socket_can_.open()) && rclcpp::ok())
             rclcpp::sleep_for(1s);
-
+        rm_frame_0x200_.can_id = 0x200;
+        rm_frame_0x200_.can_dlc = 8;
+        rm_frame_0x1FF_.can_id = 0x1FF;
+        rm_frame_0x1FF_.can_dlc = 8;
         std::cout << "CanBus " << bus_name_ << " constructed successfully" << std::endl;
     }
     void CanBus::read(const rclcpp::Time &time)
@@ -97,8 +100,8 @@ namespace SP2Control
     void CanBus::write()
     {
         bool has_write_frame0 = false, has_write_frame1 = false;
-        std::fill(std::begin(rm_frame_0x1FF.data), std::end(rm_frame_0x1FF.data), 0);
-        std::fill(std::begin(rm_frame_0x200.data), std::end(rm_frame_0x200.data), 0);
+        std::fill(std::begin(rm_frame_0x1FF_.data), std::end(rm_frame_0x1FF_.data), 0);
+        std::fill(std::begin(rm_frame_0x200_.data), std::end(rm_frame_0x200_.data), 0);
 
         for (auto &id2act_data : *can_bus_data_.id2act_data_)
         {
@@ -115,24 +118,38 @@ namespace SP2Control
                 // ROS_INFO_STREAM(act_coeff.effort2act * id2act_data.second.exe_effort);
                 if (-1 < id && id < 4)
                 {
-                    rm_frame_0x200.data[2 * id] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
-                    rm_frame_0x200.data[2 * id + 1] = static_cast<uint8_t>(cmd);
+                    rm_frame_0x200_.data[2 * id] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
+                    rm_frame_0x200_.data[2 * id + 1] = static_cast<uint8_t>(cmd);
                     has_write_frame0 = true;
                 }
                 else if (3 < id && id < 8)
                 {
-                    rm_frame_0x1FF.data[2 * (id - 4)] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
-                    rm_frame_0x1FF.data[2 * (id - 4) + 1] = static_cast<uint8_t>(cmd);
+                    rm_frame_0x1FF_.data[2 * (id - 4)] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
+                    rm_frame_0x1FF_.data[2 * (id - 4) + 1] = static_cast<uint8_t>(cmd);
                     has_write_frame1 = true;
                 }
             }
         }
         if (has_write_frame0)
-            socket_can_.write(&rm_frame_0x200);
+            socket_can_.write(&rm_frame_0x200_);
         if (has_write_frame1)
-            socket_can_.write(&rm_frame_0x1FF);
+            socket_can_.write(&rm_frame_0x1FF_);
     }
 
+    CanBus::~CanBus()
+    {
+        rm_frame_0x200_.can_id = 0x200;
+        rm_frame_0x1FF_.can_id = 0x1FF;
+        rm_frame_0x200_.can_dlc = 8;
+        rm_frame_0x1FF_.can_dlc = 8;
+        for (int i = 0; i < 8; i++)
+        {
+            rm_frame_0x200_.data[i] = 0x00;
+            rm_frame_0x1FF_.data[i] = 0x00;
+        }
+        socket_can_.write(&rm_frame_0x200_);
+        socket_can_.write(&rm_frame_0x1FF_);
+    }
     void CanBus::recvCallback(const can_frame &rx_frame)
     {
         /* 已是无锁队列，无需再加锁 */

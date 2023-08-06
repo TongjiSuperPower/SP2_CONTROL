@@ -44,24 +44,70 @@ namespace SP2Control
             if (bus_name2act_data_.find(jnt_bus_name) == bus_name2act_data_.end())
                 bus_name2act_data_.emplace(make_pair(jnt_bus_name, ID2ACTDATA_MAP{}));
             bus_name2act_data_[jnt_bus_name].emplace(std::make_pair(
-                jnt_id, ActData{
-                            .name = joint.name,
-                            .type = jnt_type,
-                            .q_cur = 0,
-                            .q_last = 0,
-                            .qd_raw = 0,
-                            .seq = 0,
-                            .q_circle = 0,
-                            .stamp = rclcpp::Clock().now(),
-                            .offset = 0,
-                            .pos = 0,
-                            .vel = 0,
-                            .acc = 0,
-                            .eff = 0,
-                            .exe_cmd = 0,
-                            .cmd = 0,
-                            .temperature = 25.,
-                        }));
+                jnt_id, ActData(joint.name, jnt_type, rclcpp::Clock().now())));
+            // 为了方便transmission的查询，建立joint_name-jnt_data哈希表
+            jnt_name2jnt_data_ptr_.emplace(joint.name, &(bus_name2act_data_[jnt_bus_name][jnt_id]));
+        }
+        /**
+         *  基于内存和运行速度上的考虑，不需要为没有transmssion的actuator设定JntData，只需要复用ActData的数据即可。
+         *  并且考虑到目前transmission的设计思路，实际应该为每个带transmission的关节实例化两个transmission，
+         *  也即jnt2act_transmission_和act2jnt_transmission_，前者负责状态量的转化，后者负责控制量的转化。
+         *  目前只支持simple类型的Transmission
+         */
+
+        auto simple_transmission_loader = transmission_interface::SimpleTransmissionLoader();
+        //  先遍历所有的transmission
+        for (const auto &transmission_info : info_.transmissions)
+        {
+            if (transmission_info.type != "transmission_interface/SimpleTransmission")
+            {
+                printf("Transmission '%s' of type '%s' not supported.\n",
+                       transmission_info.name.c_str(), transmission_info.type.c_str());
+                return hardware_interface::CallbackReturn::ERROR;
+            }
+            std::shared_ptr<transmission_interface::Transmission> transmission;
+            //  可能会有参数错误或缺失的问题
+            try
+            {
+                transmission = simple_transmission_loader.load(transmission_info);
+            }
+            catch (const transmission_interface::TransmissionInterfaceException &e)
+            {
+                printf("Error while loading transmission %s: %s", transmission_info.name.c_str(), e.what());
+                return hardware_interface::CallbackReturn::ERROR;
+            }
+
+            std::vector<transmission_interface::JointHandle> joint_handles;
+            std::vector<transmission_interface::ActuatorHandle> actuator_handles;
+            //  开始遍历每个transmission内部的joint容器，但由于是simple型，因此其size只能为1
+            for (const auto &joint_info : transmission_info.joints)
+            {
+                auto it = jnt_name2jnt_data_ptr_.find(joint_info.name);
+                if (it == jnt_name2jnt_data_ptr_.end())
+                {
+                    printf("Error while setting up transmission, while '%s' isn't declared in URDF", joint_info.name.c_str());
+                    return hardware_interface::CallbackReturn::ERROR;
+                }
+                const auto jnt_data_it = jnt_data_.insert(jnt_data_.end(), JntData(joint_info.name));
+                //  Transmission源码暂时不支持accerleration
+                actuator_handles.push_back(transmission_interface::ActuatorHandle(
+                    joint_info.name, hardware_interface::HW_IF_POSITION, &(it->second->pos)));
+                actuator_handles.push_back(transmission_interface::ActuatorHandle(
+                    joint_info.name, hardware_interface::HW_IF_VELOCITY, &(it->second->vel)));
+                actuator_handles.push_back(transmission_interface::ActuatorHandle(
+                    joint_info.name, hardware_interface::HW_IF_EFFORT, &(it->second->eff)));
+                joint_handles.push_back(transmission_interface::JointHandle(
+                    joint_info.name, hardware_interface::HW_IF_POSITION, &(jnt_data_it->pos)));
+                joint_handles.push_back(transmission_interface::JointHandle(
+                    joint_info.name, hardware_interface::HW_IF_VELOCITY, &(jnt_data_it->vel)));
+                joint_handles.push_back(transmission_interface::JointHandle(
+                    joint_info.name, hardware_interface::HW_IF_EFFORT, &(jnt_data_it->eff)));
+                /**
+                 * 若Joint有Transmission，则使用新建立的JntData替换掉jnt_name2jnt_data_ptr中的ActData
+                 * 从迭代器获得左值，然后再取其地址。虽然测试了简单类型，但还是感觉这个操作有点点不安全。
+                 */
+                it->second = &(*jnt_data_it);
+            }
         }
         /**
          *  ROS2 Hardware并没有外层node的权限，因此只能使用generate_parameter_library(https://github.com/PickNikRobotics/generate_parameter_library)硬编码，
@@ -113,11 +159,10 @@ namespace SP2Control
                                                        .act2eff = param_list["act2eff"].as<double>(),
                                                        .pos2act = (1.0 / param_list["act2pos"].as<double>()),
                                                        .vel2act = (1.0 / param_list["act2vel"].as<double>()),
-                                                       .eff2act = (1.0 / param_list["act2eff"].as<double>()),
+                                                       .eff2act = param_list["eff2act"].as<double>(),
                                                        .max_out = param_list["max_out"].as<double>(),
                                                    }));
         }
-        plot(type2act_coeff_);
 
         for (auto &bus : bus_name2act_data_)
         {
@@ -189,6 +234,14 @@ namespace SP2Control
 
     hardware_interface::return_type SP2Hardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
     {
+        /*------------------------------- IN_TEST --------------------------------*/
+        ActData *p = static_cast<ActData *>(jnt_name2jnt_data_ptr_["arm_joint"]);
+        p->exe_cmd = 10 * (-p->pos) + 0.4 * (-p->vel);
+        /*------------------------------- IN_TEST --------------------------------*/
+        ActData *p = static_cast<ActData *>(jnt_name2jnt_data_ptr_["arm_joint"]);
+        for (auto &can_bus : can_buses_)
+            can_bus->write();
+
         return hardware_interface::return_type::OK;
     }
 
