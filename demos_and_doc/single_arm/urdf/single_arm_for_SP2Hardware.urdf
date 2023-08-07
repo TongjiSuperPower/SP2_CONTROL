@@ -48,6 +48,13 @@
 			<param name="type">rm_2006</param>
 			<param name="ID">0x201</param>
 		</joint>
+        <transmission name="transmission1">
+          <plugin>transmission_interface/SimpleTransmission</plugin>
+          <joint name="arm_joint" role="arm_joint">
+            <mechanical_reduction>0.027</mechanical_reduction>
+            <offset>0.0</offset>
+          </joint>
+        </transmission>
 	</ros2_control>
 
 </robot>

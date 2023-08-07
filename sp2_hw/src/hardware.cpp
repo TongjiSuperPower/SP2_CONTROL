@@ -255,11 +255,19 @@ namespace SP2Control
     {
         for (auto &can_bus : can_buses_)
             can_bus->read(rclcpp::Clock().now());
+        std::for_each(
+            act2jnt_transmissions_.begin(), act2jnt_transmissions_.end(),
+            [](auto &transmission)
+            { transmission->actuator_to_joint(); });
         return hardware_interface::return_type::OK;
     }
 
     hardware_interface::return_type SP2Hardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
     {
+        std::for_each(
+            jnt2act_transmissions_.begin(), jnt2act_transmissions_.end(),
+            [](auto &transmission)
+            { transmission->joint_to_actuator(); });
         /*------------------------------- IN_TEST --------------------------------*/
         ActData *p = static_cast<ActData *>(jnt_name2jnt_data_ptr_["arm_joint"]);
         p->exe_cmd = 10 * (-p->pos) + 0.4 * (-p->vel);
