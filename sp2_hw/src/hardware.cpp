@@ -254,7 +254,7 @@ namespace SP2Control
     hardware_interface::return_type SP2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
     {
         for (auto &can_bus : can_buses_)
-            can_bus->read(rclcpp::Clock().now());
+            can_bus->read();
         std::for_each(
             act2jnt_transmissions_.begin(), act2jnt_transmissions_.end(),
             [](auto &transmission)

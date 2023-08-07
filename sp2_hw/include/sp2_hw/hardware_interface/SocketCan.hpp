@@ -50,12 +50,12 @@ namespace SocketCan
     {
         if (!isOpen())
         {
-            printf("Unable to write: SocketCan %s not open.", interface_name_.c_str());
+            printf("Unable to write: SocketCan %s not open. \n", interface_name_.c_str());
             return;
         }
         if (::write(socket_fd_, tx_frame, sizeof(can_frame)) == -1)
         {
-            printf("Unable to write: SocketCan %s tx buffer may be full.", interface_name_.c_str());
+            printf("Unable to write: SocketCan %s tx buffer may be full. \n", interface_name_.c_str());
             return;
         }
     }

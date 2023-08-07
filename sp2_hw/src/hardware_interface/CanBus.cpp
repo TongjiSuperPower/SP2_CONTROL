@@ -42,7 +42,7 @@ namespace SP2Control
         rm_frame_0x1FF_.can_dlc = 8;
         std::cout << "CanBus " << bus_name_ << " constructed successfully" << std::endl;
     }
-    void CanBus::read(const rclcpp::Time &time)
+    void CanBus::read()
     {
         CanFrameStamp can_frame_stamp;
         /**
