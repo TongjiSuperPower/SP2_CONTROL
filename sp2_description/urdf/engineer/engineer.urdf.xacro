@@ -7,11 +7,12 @@
 	<xacro:engineer_chassis roller_type="simple"/>
 	<xacro:engineer_ros2_control name="engineer"/>
 	
-	<gazebo>
-		<plugin name="gazebo_ros2_control" filename="libgazebo_ros_control.so">
-			<robotNamespace>/</robotNamespace>
-		</plugin>
-	</gazebo>
+  	<gazebo>
+    	  <!-- Joint state publisher -->
+   	  <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+        <parameters>$(find sp2_description)/config/engineer_controllers.yaml</parameters>
+      </plugin>
+  	</gazebo>
 	
 </robot>
 

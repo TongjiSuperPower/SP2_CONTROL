@@ -55,6 +55,7 @@ namespace SocketCan
         }
         if (::write(socket_fd_, tx_frame, sizeof(can_frame)) == -1)
         {
+            perror("Error:");
             printf("Unable to write: SocketCan %s tx buffer may be full. \n", interface_name_.c_str());
             return;
         }
