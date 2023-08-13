@@ -2,6 +2,7 @@
 #define SP2_CONTROL_CHASSIS_BASE_HPP
 
 #include "controller_interface/controller_interface.hpp"
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -60,17 +61,37 @@ namespace chassis_controllers
             const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
         controller_interface::CallbackReturn on_init() override;
-
+        /**
+         * @brief 完成参数读取
+         */
         controller_interface::CallbackReturn on_configure(
             const rclcpp_lifecycle::State &previous_state) override;
+        /**
+         * @brief 获取已经储存在state_interface_和command_interface_中的资源
+         */
         controller_interface::CallbackReturn on_activate(
             const rclcpp_lifecycle::State &previous_state) override;
         controller_interface::CallbackReturn on_deactivate(
             const rclcpp_lifecycle::State &previous_state) override;
 
     protected:
+        struct WheelHandle
+        {
+            std::string joint_name;
+            std::reference_wrapper<const hardware_interface::LoanedStateInterface> vel_state;
+            std::reference_wrapper<hardware_interface::LoanedCommandInterface> eff_cmd;
+        };
+
         std::shared_ptr<roller_wheel::ParamListener> param_listener_;
         roller_wheel::Params params_;
+        std::vector<WheelHandle> registered_wheel_handles_;
+
+        controller_interface::CallbackReturn configure_joints(
+            const std::vector<std::string> &wheel_name, std::vector<WheelHandle> &registered_handles);
+        controller_interface::CallbackReturn move_joints(geometry_msgs::msg::TwistStamped &command);
+
+    private:
+        std::vector<std::string> wheel_names_{};
     };
 
 } // namespace chassis_controllers

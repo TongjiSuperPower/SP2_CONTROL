@@ -9,6 +9,10 @@ controller_manager:
 
 effort_controllers:
   ros__parameters:
+    left_front_wheel_name: left_front_wheel_joint
+    right_front_wheel_name: right_front_wheel_joint
+    left_back_wheel_name: left_back_wheel_joint
+    right_back_wheel_name: right_back_wheel_joint
     joints:
       - left_front_wheel_joint
       - right_back_wheel_joint

@@ -3,13 +3,13 @@
 
   <xacro:macro name="mecanum_joint" params="prefix bus_name type ID">
       <joint name="${prefix}_wheel_joint">
-	<command_interface name="effort"/>
+	      <command_interface name="effort"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
         <param name="bus_name">${bus_name}</param>
         <param name="type">${type}</param>
-	<param name="ID">${ID}</param>
+	      <param name="ID">${ID}</param>
       </joint>
   </xacro:macro>
 

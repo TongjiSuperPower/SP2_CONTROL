@@ -1,4 +1,8 @@
 roller_wheel:
+  left_front_wheel_name: { type: string, default_value: "" }
+  right_front_wheel_name: { type: string, default_value: "" }
+  left_back_wheel_name: { type: string, default_value: "" }
+  right_back_wheel_name: { type: string, default_value: "" }
   joints:
     {
       type: string_array,
