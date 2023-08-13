@@ -1,0 +1,7 @@
+<library path="chassis_controllers">
+  <class name="chassis_controllers/RollerWheel" type="chassis_controllers::RollerWheel" base_class_type="controller_interface::ControllerInterface">
+  <description>
+    chassis controller for Mecanum wheel and omni wheel structure robots.
+  </description>
+  </class>
+</library>

@@ -7,7 +7,9 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "realtime_tools/realtime_box.h"
 
-namespace ChassisBase
+#include "roller_wheel_controller_parameter.hpp"
+
+namespace chassis_controllers
 {
     /**
      * @brief 底盘控制器基类
@@ -23,16 +25,16 @@ namespace ChassisBase
         virtual controller_interface::InterfaceConfiguration state_interface_configuration() const = 0;
 
         virtual controller_interface::return_type update(
-            const rclcpp::Time &time, const rclcpp::Duration &period) override;
+            const rclcpp::Time &time, const rclcpp::Duration &period) = 0;
 
-        virtual controller_interface::CallbackReturn on_init() override;
+        virtual controller_interface::CallbackReturn on_init() = 0;
 
         controller_interface::CallbackReturn on_configure(
             const rclcpp_lifecycle::State &previous_state) override;
         controller_interface::CallbackReturn on_activate(
-            const rclcpp_lifecycle::State &previous_state) override;
+            const rclcpp_lifecycle::State &previous_state) = 0;
         controller_interface::CallbackReturn on_deactivate(
-            const rclcpp_lifecycle::State &previous_state) override;
+            const rclcpp_lifecycle::State &previous_state) = 0;
 
     protected:
         bool is_subscriber_active_ = false;
@@ -42,11 +44,11 @@ namespace ChassisBase
         rclcpp::Subscription<Twist>::SharedPtr velocity_command_stamped_subscriber_ = nullptr;
     };
 
-} // namespace ChassisBase
+} // namespace chassis_controllers
 
-namespace RollerWheel
+namespace chassis_controllers
 {
-    class RollerWheel : public ChassisBase::ChassisBase
+    class RollerWheel : public chassis_controllers::ChassisBase
     {
     public:
         RollerWheel();
@@ -67,9 +69,9 @@ namespace RollerWheel
             const rclcpp_lifecycle::State &previous_state) override;
 
     protected:
-        std::shared_ptr<ParamListener> param_listener_;
-        Params params_;
+        std::shared_ptr<roller_wheel::ParamListener> param_listener_;
+        roller_wheel::Params params_;
     };
 
-} // namespace RollerWheel
+} // namespace chassis_controllers
 #endif

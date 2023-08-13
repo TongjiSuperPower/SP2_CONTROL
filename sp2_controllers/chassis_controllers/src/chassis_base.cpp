@@ -1,7 +1,6 @@
-#include "sp2_controllers/chassis_base.hpp"
-#include "diff_drive_controller_parameters.hpp"
+#include "chassis_controllers/chassis_base.hpp"
 
-namespace ChassisBase
+namespace chassis_controllers
 {
     ChassisBase::ChassisBase() : controller_interface::ControllerInterface(){};
 
@@ -53,16 +52,17 @@ namespace ChassisBase
         }
     }
 
-} // namespace ChassisBase
+} // namespace chassis_controllers
 
-namespace RollerWheel
+namespace chassis_controllers
 {
+    RollerWheel::RollerWheel() : ChassisBase::ChassisBase(){};
     controller_interface::CallbackReturn RollerWheel::on_init()
     {
         try
         {
             // Create the parameter listener and get the parameters
-            param_listener_ = std::make_shared<ParamListener>(get_node());
+            param_listener_ = std::make_shared<roller_wheel::ParamListener>(get_node());
             params_ = param_listener_->get_params();
         }
         catch (const std::exception &e)
@@ -78,5 +78,40 @@ namespace RollerWheel
         const rclcpp_lifecycle::State &previous_state)
     {
         ChassisBase::on_configure(previous_state);
+        return controller_interface::CallbackReturn::SUCCESS;
     }
-} // namespace RollerWheel
+    controller_interface::InterfaceConfiguration RollerWheel::command_interface_configuration() const
+    {
+        return controller_interface::InterfaceConfiguration{
+            controller_interface::interface_configuration_type::NONE};
+    }
+    controller_interface::InterfaceConfiguration RollerWheel::state_interface_configuration() const
+    {
+        return controller_interface::InterfaceConfiguration{
+            controller_interface::interface_configuration_type::NONE};
+    }
+
+    controller_interface::return_type RollerWheel::update(
+        const rclcpp::Time &time, const rclcpp::Duration &period)
+    {
+        std::cout << "Controller Update" << std::endl;
+        return controller_interface::return_type::OK;
+    }
+
+    controller_interface::CallbackReturn RollerWheel::on_activate(
+        const rclcpp_lifecycle::State &previous_state)
+    {
+        RCLCPP_INFO(get_node()->get_logger(), "activate successful");
+        return controller_interface::CallbackReturn::SUCCESS;
+    }
+    controller_interface::CallbackReturn RollerWheel::on_deactivate(
+        const rclcpp_lifecycle::State &previous_state)
+    {
+        return controller_interface::CallbackReturn::SUCCESS;
+    }
+} // namespace chassis_controllers"
+
+#include "class_loader/register_macro.hpp"
+
+CLASS_LOADER_REGISTER_CLASS(
+    chassis_controllers::RollerWheel, controller_interface::ControllerInterface)
