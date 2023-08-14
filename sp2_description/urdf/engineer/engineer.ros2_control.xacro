@@ -29,10 +29,10 @@
       <xacro:mecanum_joint prefix="right_front" bus_name="can0" type="rm_3508" ID="0x203"/>
       <xacro:mecanum_joint prefix="right_back" bus_name="can0" type="rm_3508" ID="0x204"/>
 
-      <!--xacro:ros2_wheel_transmission prefix="left_front" mechanical_reduction="19"/-->
+      <xacro:ros2_wheel_transmission prefix="left_front" mechanical_reduction="19"/>
       <xacro:ros2_wheel_transmission prefix="left_back" mechanical_reduction="19"/>
       <xacro:ros2_wheel_transmission prefix="right_front" mechanical_reduction="19"/>
-      <!--xacro:ros2_wheel_transmission prefix="right_back" mechanical_reduction="19"/-->
+      <xacro:ros2_wheel_transmission prefix="right_back" mechanical_reduction="19"/>
     </ros2_control>
 
   </xacro:macro>

@@ -54,6 +54,15 @@ namespace SP2Control
          *  也即jnt2act_transmission_和act2jnt_transmission_，前者负责状态量的转化，后者负责控制量的转化。
          *  目前只支持simple类型的Transmission
          */
+        // Vector在扩容后元素地址会发生变化
+        const size_t jnt_data_reserve_size = std::accumulate(
+            info_.transmissions.begin(), info_.transmissions.end(), 0,
+            [](const size_t &acc, const hardware_interface::TransmissionInfo &transmission_info) -> size_t
+            {
+                return acc + transmission_info.joints.size();
+            });
+        jnt_data_.reserve(jnt_data_reserve_size);
+
         auto simple_transmission_loader = transmission_interface::SimpleTransmissionLoader();
         //  先遍历所有的transmission
         for (const auto &transmission_info : info_.transmissions)
@@ -91,7 +100,7 @@ namespace SP2Control
                     printf("Error while setting up transmission, while '%s' isn't declared in URDF", joint_info.name.c_str());
                     return hardware_interface::CallbackReturn::ERROR;
                 }
-                const auto jnt_data_it = jnt_data_.insert(jnt_data_.end(), JntData(joint_info.name));
+                jnt_data_.emplace_back(JntData(joint_info.name));
                 //  Transmission源码暂时不支持accerleration
                 actuator_state_handles.push_back(transmission_interface::ActuatorHandle(
                     joint_info.name, hardware_interface::HW_IF_POSITION, &(it->second->pos)));
@@ -100,23 +109,17 @@ namespace SP2Control
                 actuator_state_handles.push_back(transmission_interface::ActuatorHandle(
                     joint_info.name, hardware_interface::HW_IF_EFFORT, &(it->second->eff)));
                 joint_state_handles.push_back(transmission_interface::JointHandle(
-                    joint_info.name, hardware_interface::HW_IF_POSITION, &(jnt_data_it->pos)));
+                    joint_info.name, hardware_interface::HW_IF_POSITION, &(jnt_data_.back().pos)));
                 joint_state_handles.push_back(transmission_interface::JointHandle(
-                    joint_info.name, hardware_interface::HW_IF_VELOCITY, &(jnt_data_it->vel)));
+                    joint_info.name, hardware_interface::HW_IF_VELOCITY, &(jnt_data_.back().vel)));
                 joint_state_handles.push_back(transmission_interface::JointHandle(
-                    joint_info.name, hardware_interface::HW_IF_EFFORT, &(jnt_data_it->eff)));
+                    joint_info.name, hardware_interface::HW_IF_EFFORT, &(jnt_data_.back().eff)));
 
                 // TODO 根据其command_interface选择使用哪种interface，现在只能用HW_IF_EFFORT
                 actuator_cmd_handles.push_back(transmission_interface::ActuatorHandle(
                     joint_info.name, hardware_interface::HW_IF_EFFORT, &(it->second->cmd)));
                 joint_cmd_handles.push_back(transmission_interface::JointHandle(
-                    joint_info.name, hardware_interface::HW_IF_EFFORT, &(it->second->cmd)));
-                /**
-                 * 若Joint有Transmission，则使用新建立的JntData替换掉jnt_name2jnt_data_ptr中的ActData
-                 * 从迭代器获得左值，然后再取其地址。虽然测试了简单类型，但还是感觉这个操作有点点不安全。
-                 */
-                it->second = &(*jnt_data_it);
-
+                    joint_info.name, hardware_interface::HW_IF_EFFORT, &(jnt_data_.back().cmd)));
                 try
                 {
                     act2jnt_transmission->configure(joint_state_handles, actuator_state_handles);
@@ -129,6 +132,7 @@ namespace SP2Control
                 }
                 act2jnt_transmissions_.push_back(act2jnt_transmission);
                 jnt2act_transmissions_.push_back(jnt2act_transmission);
+                it->second = &(jnt_data_.back());
             }
         }
         /**
@@ -269,8 +273,8 @@ namespace SP2Control
             [](auto &transmission)
             { transmission->joint_to_actuator(); });
         /*------------------------------- IN_TEST --------------------------------*/
-        ActData *p = static_cast<ActData *>(jnt_name2jnt_data_ptr_["arm_joint"]);
-        p->exe_cmd = 10 * (-p->pos) + 0.4 * (-p->vel);
+        //      ActData *p = static_cast<ActData *>(jnt_name2jnt_data_ptr_["arm_joint"]);
+        //      p->exe_cmd = 10 * (-p->pos) + 0.4 * (-p->vel);
         /*------------------------------- IN_TEST --------------------------------*/
         for (auto &can_bus : can_buses_)
             can_bus->write();
