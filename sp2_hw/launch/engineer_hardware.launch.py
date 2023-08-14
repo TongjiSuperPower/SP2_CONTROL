@@ -55,7 +55,7 @@ def generate_launch_description():
 
     robot_controllers = PathJoinSubstitution(
         [
-            FindPackageShare("single_arm"),
+            FindPackageShare("sp2_hw"),
             "config",
             "controllers.yaml",
         ]

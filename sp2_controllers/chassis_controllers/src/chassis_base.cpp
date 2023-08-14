@@ -207,10 +207,10 @@ namespace chassis_controllers
         double &linear_x_command = command.twist.linear.x;
         double &linear_y_command = command.twist.linear.y;
         double &angular_command = command.twist.angular.z;
-        for (size_t index = 0; index < registered_wheel_handles_.size(); ++index)
-        {
-            registered_wheel_handles_[index].eff_cmd.get().set_value(linear_x_command);
-        }
+        registered_wheel_handles_[0].eff_cmd.get().set_value(linear_x_command);
+        registered_wheel_handles_[1].eff_cmd.get().set_value(-linear_x_command);
+        registered_wheel_handles_[2].eff_cmd.get().set_value(linear_x_command);
+        registered_wheel_handles_[3].eff_cmd.get().set_value(-linear_x_command);
     }
 } // namespace chassis_controllers"
 

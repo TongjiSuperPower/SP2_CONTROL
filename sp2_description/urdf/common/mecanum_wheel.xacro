@@ -42,6 +42,9 @@
                     <geometry>
                         <sphere radius="${roller_radius}"/>
                     </geometry>
+                    <material name="">
+                        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+                    </material>
                 </xacro:if>
             </collision>
             <inertial>
@@ -83,6 +86,9 @@
                         <mesh filename="package://sp2_description/meshes/common/mecanum_wheel/left_mecanum_wheel.STL"/>
                     </xacro:if>
                 </geometry>
+                <material name="">
+                    <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+                </material>
             </visual>
             <inertial>
                 <mass value="0.4235"/>
@@ -123,7 +129,7 @@
 
     </xacro:macro>
 
-    <xacro:macro name="wheel_transmission" params="prefix mechanical_reduction">
+    <xacro:macro name="ros1_wheel_transmission" params="prefix mechanical_reduction">
         <transmission name="${prefix}_wheel_trans">
             <type>transmission_interface/SimpleTransmission</type>
             <actuator name="${prefix}_wheel_motor">
@@ -136,4 +142,13 @@
         </transmission>
     </xacro:macro>
 
+    <xacro:macro name="ros2_wheel_transmission" params="prefix mechanical_reduction">
+        <transmission name="${prefix}_wheel_trans">
+            <plugin>transmission_interface/SimpleTransmission</plugin>
+            <joint name="${prefix}_wheel_joint" role="${prefix}_wheel_joint">
+                <mechanical_reduction>${mechanical_reduction}</mechanical_reduction>
+                <offset>0.0</offset>
+            </joint>
+        </transmission>
+    </xacro:macro>
 </robot>
