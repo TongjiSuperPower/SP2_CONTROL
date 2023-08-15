@@ -27,7 +27,7 @@ namespace utilities
         std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::JointState>> joint_state_publisher_;
         std::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::msg::JointState>>
             realtime_joint_state_publisher_;
-        std::vector<std::string> name_prefix{"left_front", "left_back", "right_front", "right_back"};
+        std::vector<std::string> name_prefix{"left_front", "left_rear", "right_front", "right_rear"};
         std::vector<std::string> name_suffix{"0", "1", "2", "3", "4", "5", "6", "7",
                                              "8", "9", "10", "11", "12", "13", "14", "15"};
     };

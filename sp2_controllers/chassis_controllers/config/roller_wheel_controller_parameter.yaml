@@ -1,17 +1,38 @@
 roller_wheel:
-  left_front_wheel_name: { type: string, default_value: "" }
-  right_front_wheel_name: { type: string, default_value: "" }
-  left_back_wheel_name: { type: string, default_value: "" }
-  right_back_wheel_name: { type: string, default_value: "" }
+  wheel_base: { type: double, default_value: 0.47 }
+  wheel_track: { type: double, default_value: 0.505 }
+  wheel_radius: { type: double, default_value: 0.07625 }
+
   joints:
     {
       type: string_array,
       default_value: [],
-      description: "Name of the joints to control",
+      description: "Names of joints used by the controller",
+      validation: { unique<>: null },
     }
-  interface_name:
-    {
-      type: string,
-      default_value: "",
-      description: "Name of the interface to command",
-    }
+  gains:
+    __map_joints:
+      p:
+        {
+          type: double,
+          default_value: 0.0,
+          description: "Proportional gain for PID",
+        }
+      i:
+        {
+          type: double,
+          default_value: 0.0,
+          description: "Intigral gain for PID",
+        }
+      d:
+        {
+          type: double,
+          default_value: 0.0,
+          description: "Derivative gain for PID",
+        }
+      i_clamp:
+        {
+          type: double,
+          default_value: 0.0,
+          description: "Integrale clamp. Symmetrical in both positive and negative direction.",
+        }

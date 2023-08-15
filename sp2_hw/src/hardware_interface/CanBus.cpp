@@ -113,18 +113,18 @@ namespace SP2Control
                     continue;
                 const ActCoeff &act_coeff = can_bus_data_.type2act_coeff_->find(id2act_data.second.type)->second;
                 int id = id2act_data.first - 0x201;
-                double cmd =
-                    limitAmplitude(act_coeff.eff2act * id2act_data.second.exe_cmd, act_coeff.max_out);
+                double exe_cmd = limitAmplitude(act_coeff.eff2act * id2act_data.second.cmd, act_coeff.max_out);
+
                 if (-1 < id && id < 4)
                 {
-                    rm_frame_0x200_.data[2 * id] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
-                    rm_frame_0x200_.data[2 * id + 1] = static_cast<uint8_t>(cmd);
+                    rm_frame_0x200_.data[2 * id] = static_cast<uint8_t>(static_cast<int16_t>(exe_cmd) >> 8u);
+                    rm_frame_0x200_.data[2 * id + 1] = static_cast<uint8_t>(exe_cmd);
                     has_write_frame0 = true;
                 }
                 else if (3 < id && id < 8)
                 {
-                    rm_frame_0x1FF_.data[2 * (id - 4)] = static_cast<uint8_t>(static_cast<int16_t>(cmd) >> 8u);
-                    rm_frame_0x1FF_.data[2 * (id - 4) + 1] = static_cast<uint8_t>(cmd);
+                    rm_frame_0x1FF_.data[2 * (id - 4)] = static_cast<uint8_t>(static_cast<int16_t>(exe_cmd) >> 8u);
+                    rm_frame_0x1FF_.data[2 * (id - 4) + 1] = static_cast<uint8_t>(exe_cmd);
                     has_write_frame1 = true;
                 }
             }

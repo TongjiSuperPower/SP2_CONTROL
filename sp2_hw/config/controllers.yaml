@@ -4,3 +4,45 @@ controller_manager:
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
+    effort_controllers:
+      type: chassis_controllers/RollerWheel
+
+#           ∧ Y
+#   1  ///  |  \\\   0
+#      |¯¯¯¯|¯¯¯¯|
+#  ----|----|----|-----> X
+#      |____|____|
+#   2  \\\  |  ///   3
+effort_controllers:
+  ros__parameters:
+    wheel_base: 0.47
+    wheel_track: 0.505
+    wheel_radius: 0.07625
+
+    # joints数组从上至下分别为0-1-2-3象限轮组关节名，与上方示意图一致
+    joints:
+      - left_front_wheel_joint
+      - left_rear_wheel_joint
+      - right_rear_wheel_joint
+      - right_front_wheel_joint
+    gains:
+      left_front_wheel_joint:
+        p: 10.0
+        i: 0.0
+        d: 0.0
+        i_clamp: 1000.0
+      left_rear_wheel_joint:
+        p: 10.0
+        i: 0.0
+        d: 0.0
+        i_clamp: 1000.0
+      right_rear_wheel_joint:
+        p: 10.0
+        i: 0.0
+        d: 0.0
+        i_clamp: 1000.0
+      right_front_wheel_joint:
+        p: 10.0
+        i: 0.0
+        d: 0.0
+        i_clamp: 1000.0

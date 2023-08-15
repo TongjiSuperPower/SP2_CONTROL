@@ -6,8 +6,30 @@
 	<xacro:arg name="use_simulation" default="true"/>
 	<xacro:engineer_chassis roller_type="simple"/>
 	<xacro:engineer_ros2_control name="engineer"/>
-	
+
+<!-- ............................. IMU ........................................ -->
+	<link name="imu_frame"/>
+
+	<joint name="imu_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="imu_frame"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+	</joint>
+	<gazebo reference="imu_frame">
+      <sensor name="imu_sensor" type="imu">
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+        <ignition_frame_id>imu_frame</ignition_frame_id>
+        <visualize>true</visualize>
+        <topic>imu</topic>
+      </sensor>
+	</gazebo> 
+<!-- ............................. IMU ........................................ -->
   	<gazebo>
+    	  <!-- IMU plugin -->
+	  <plugin filename="ignition-gazebo-imu-system"
+        name="ignition::gazebo::systems::Imu">
+      </plugin>
     	  <!-- Joint state publisher -->
    	  <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
         <parameters>$(find sp2_description)/config/engineer_controllers.yaml</parameters>

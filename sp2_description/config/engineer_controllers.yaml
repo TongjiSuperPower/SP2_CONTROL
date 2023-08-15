@@ -6,19 +6,50 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
     effort_controllers:
       type: chassis_controllers/RollerWheel
+    imu_sensor_broadcaster:
+      type: imu_sensor_broadcaster/IMUSensorBroadcaster
 
+imu_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: imu_sensor
+    frame_id: imu_frame
+
+#           ∧ Y
+#   1  ///  |  \\\   0
+#      |¯¯¯¯|¯¯¯¯|
+#  ----|----|----|-----> X
+#      |____|____|
+#   2  \\\  |  ///   3
 effort_controllers:
   ros__parameters:
-    left_front_wheel_name: left_front_wheel_joint
-    right_front_wheel_name: right_front_wheel_joint
-    left_back_wheel_name: left_back_wheel_joint
-    right_back_wheel_name: right_back_wheel_joint
+    wheel_base: 0.47
+    wheel_track: 0.505
+    wheel_radius: 0.07625
+
+    # joints数组从上至下分别为0-1-2-3象限轮组关节名，与上方示意图一致
     joints:
       - left_front_wheel_joint
-      - right_back_wheel_joint
-    command_interfaces:
-      - effort
-    state_interfaces:
-      - position
-      - velocity
-      - effort
+      - left_rear_wheel_joint
+      - right_rear_wheel_joint
+      - right_front_wheel_joint
+    gains:
+      left_front_wheel_joint:
+        p: 10.0
+        i: 0.2
+        d: 0.0
+        i_clamp: 1000.0
+      left_rear_wheel_joint:
+        p: 10.0
+        i: 0.2
+        d: 0.0
+        i_clamp: 1000.0
+      right_rear_wheel_joint:
+        p: 10.0
+        i: 0.2
+        d: 0.0
+        i_clamp: 1000.0
+      right_front_wheel_joint:
+        p: 10.0
+        i: 0.2
+        d: 0.0
+        i_clamp: 1000.0

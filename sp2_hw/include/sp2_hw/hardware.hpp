@@ -72,9 +72,6 @@ namespace SP2Control
         std::unordered_map<std::string, JntData *> jnt_name2jnt_data_ptr_{};
         std::vector<std::shared_ptr<transmission_interface::Transmission>> jnt2act_transmissions_;
         std::vector<std::shared_ptr<transmission_interface::Transmission>> act2jnt_transmissions_;
-
-        template <typename typeT>
-        void setActCoeffMap(const std::string &type_name, const typeT &type, TYPE2ACTCOEFF_MAP &map);
     };
 } // namespace SP2Control
 

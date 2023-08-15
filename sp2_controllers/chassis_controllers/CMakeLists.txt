@@ -13,6 +13,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   controller_interface
   realtime_tools
   pluginlib
+  control_toolbox
 
   generate_parameter_library
   std_msgs
@@ -27,7 +28,10 @@ generate_parameter_library(roller_wheel_controller_parameter
 )
 
 add_library(${PROJECT_NAME} SHARED 
-  src/chassis_base.cpp)
+  src/chassis_base.cpp
+  src/roller_wheel.cpp
+)
+
 ament_target_dependencies(${PROJECT_NAME} PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(${PROJECT_NAME} PUBLIC roller_wheel_controller_parameter)
 pluginlib_export_plugin_description_file(controller_interface chassis_controllers_plugin.xml)

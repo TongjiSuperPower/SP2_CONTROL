@@ -234,13 +234,11 @@ namespace SP2Control
     {
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-        for (auto &id2act_data : bus_name2act_data_)
+        for (auto &jnt_data_ptr_pair : jnt_name2jnt_data_ptr_)
         {
-            for (auto &act_data : id2act_data.second)
-            {
-                command_interfaces.emplace_back(hardware_interface::CommandInterface(
-                    act_data.second.name, hardware_interface::HW_IF_EFFORT, &act_data.second.exe_cmd));
-            }
+            auto &jnt_data_ptr = jnt_data_ptr_pair.second;
+            command_interfaces.emplace_back(hardware_interface::CommandInterface(
+                jnt_data_ptr->name, hardware_interface::HW_IF_EFFORT, &jnt_data_ptr->cmd));
         }
         return command_interfaces;
     }
@@ -280,21 +278,6 @@ namespace SP2Control
             can_bus->write();
 
         return hardware_interface::return_type::OK;
-    }
-
-    template <typename typeT>
-    void SP2Hardware::setActCoeffMap(const std::string &type_name, const typeT &type, TYPE2ACTCOEFF_MAP &map)
-    {
-        // 真的太丑了，不知道在现在这个版本下有没有更好的写法
-        ActCoeff act_coeff{};
-        act_coeff.act2pos = type.act2pos;
-        act_coeff.act2vel = type.act2vel;
-        act_coeff.act2eff = type.act2eff;
-        act_coeff.eff2act = type.eff2act;
-        act_coeff.max_out = type.max_out;
-
-        if (map.find(type_name) == map.end())
-            map.emplace(make_pair(type_name, act_coeff));
     }
 
 } // namespace SP2Control

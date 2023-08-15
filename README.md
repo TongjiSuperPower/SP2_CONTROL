@@ -29,5 +29,24 @@
    sudo apt-get install ros-humble-ign-ros2-control
    ```
 
-   
+3. [安装ros_gz包](https://github.com/gazebosim/ros_gz/tree/humble)
+
+   ```
+   sudo apt-get update
+   sudo apt install ros-humble-ros-gz
+   ```
+
+## Ignition仿真环境测试
+
+1. 运行命令打开仿真环境，等待模型及控制器加载完成
+
+   ```
+   ros2 launch sp2_description robot_ignition_sim.launch.py
+   ```
+
+2. 发布运动控制话题`effort_controllers/cmd_vel_unstamped`
+
+   ```
+   ros2 topic pub effort_controllers/cmd_vel_unstamped geometry_msgs/msg/Twist "{linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}"
+   ```
 

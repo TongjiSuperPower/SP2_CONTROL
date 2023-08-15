@@ -62,6 +62,18 @@ def generate_launch_description():
         ],
     )
 
+    load_imu_sensor_broadcaster = ExecuteProcess(
+        cmd=[
+            "ros2",
+            "control",
+            "load_controller",
+            "--set-state",
+            "active",
+            "imu_sensor_broadcaster",
+        ],
+        output="screen",
+    )
+
     load_joint_state_broadcaster = ExecuteProcess(
         cmd=[
             "ros2",
@@ -83,6 +95,13 @@ def generate_launch_description():
             "active",
             "effort_controllers",
         ],
+        output="screen",
+    )
+
+    direct_ign_imu_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=["/imu@sensor_msgs/msg/Imu@gz.msgs.IMU"],
         output="screen",
     )
 
@@ -111,6 +130,12 @@ def generate_launch_description():
                 event_handler=OnProcessExit(
                     target_action=load_joint_state_broadcaster,
                     on_exit=[load_joint_trajectory_controller],
+                )
+            ),
+            RegisterEventHandler(
+                event_handler=OnProcessExit(
+                    target_action=load_joint_state_broadcaster,
+                    on_exit=[load_imu_sensor_broadcaster],
                 )
             ),
             node_robot_state_publisher,
